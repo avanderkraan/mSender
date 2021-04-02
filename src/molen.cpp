@@ -1,7 +1,6 @@
 #include <ESP8266WiFi.h>          //ESP8266 Core WiFi Library (you most likely already have this in your sketch)
 #include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal
 
-//#include <ESP8266mDNS.h>
 #include "handlemDNS.h"
 #include <WiFiUdp.h>
 
@@ -29,7 +28,7 @@ const uint8_t IR_RECEIVE_2 = D6;    // Digital pin to read an incoming signal
 const uint8_t IR_SEND = D8;         // switch for IR send LED. 0 = off, 1 = on
 
 const uint8_t BUTTON = D7;          // Digital pin to read button-push
-const uint8_t BLUE_LED = D2;
+const uint8_t PULSE_LED = D2;
 const uint8_t ACCESSPOINT_LED = D3;
 const uint8_t STATION_LED= D1;
 
@@ -100,7 +99,6 @@ void toggleWiFi();
 
 ESP8266WebServer server(80);
 WiFiClient wifiClient;
-//MDNSResponder mdns;
 
 // start Settings and EEPROM stuff
 void saveSettings() {
@@ -252,15 +250,7 @@ void switchToAccessPoint() {
   initServer();
 
   // start domain name server check
-  /*
-    mdns.close();
-    while (mdns.begin("molen", WiFi.softAPIP())) {
-      Serial.println("MDNS responder started");
-      mdns.addService("http", "tcp", 80);
-    }
-  */
   mDNSnotifyAPChange();
-  //startmDNS();
   // end domain name server check
 
   echoInterruptOn();  // to prevent error with Delay
@@ -282,16 +272,9 @@ void switchToNetwork() {
   delay(pSettings->WAIT_PERIOD);
   initServer();
 
-  /*
-  mdns.close();
-  while (mdns.begin("molen", WiFi.localIP())) {
-    Serial.println("MDNS responder started");
-    mdns.addService("http", "tcp", 80);
-  }
-  */
+  // start domain name server check
   mDNSnotifyAPChange();
-
-  //startmDNS();
+  // start domain name server check
 
   echoInterruptOn();  // to prevent error with Delay
 }
@@ -301,16 +284,10 @@ void writeResult(WiFiClient wifiClient, String result) {
   wifiClient.flush();
 }
 
-/* flashes PIN, unit is milliseconds (0-256) */
-void flashPin(uint8_t pin, uint8_t ms) {
+/* flashes PIN, unit is microseconds (0-256) */
+void flashPin(uint8_t pin, uint8_t microSec) {
   digitalWrite(pin, HIGH);
-  for (uint16_t i = 0; i <= ms; i++)
-  {
-    delayMicroseconds(250);   // delay in the loop could cause an exception (9) when using interrupts
-    delayMicroseconds(250);   // delay in the loop could cause an exception (9) when using interrupts
-    delayMicroseconds(250);   // delay in the loop could cause an exception (9) when using interrupts
-    delayMicroseconds(250);   // delay in the loop could cause an exception (9) when using interrupts
-  }
+  delayMicroseconds(microSec);   // delay in the loop could cause an exception (9) when using interrupts
   digitalWrite(pin, LOW);
 }
 
@@ -401,7 +378,7 @@ void ICACHE_RAM_ATTR detectPulse() {  // ICACHE_RAM_ATTR is voor interrupts
       (permissionToDetect == true) )
   {
     permissionToDetect = false;
-    flashPin(BLUE_LED, 1);
+    flashPin(PULSE_LED, 100);
   }
 
   if ( (digitalRead(IR_RECEIVE_1) == false) && 
@@ -515,12 +492,8 @@ void mydebug() {
   Serial.println("wifi gegevens");
   Serial.print("readAccessPointSSID: ");
   Serial.println(pWifiSettings->readAccessPointSSID());
-  Serial.print("readAccessPointPassword: ");
-  Serial.println(pWifiSettings->readAccessPointPassword());
   Serial.print("readNetworkSSID: ");
   Serial.println(pWifiSettings->readNetworkSSID());
-  Serial.print("readNetworkPassword: ");
-  Serial.println(pWifiSettings->readNetworkPassword());
 
   Serial.print("Chip ID: ");
   Serial.println(ESP.getFlashChipId());
@@ -645,47 +618,6 @@ void handleVersion() {
     server.sendHeader("Pragma", "no-cache");
     server.send(200, "text/html", result);
   }
-}
-
-/* void alive must be used in clients only
-but for now, in develop-phase it is allowed here
-TODO remove this when clients are available to test
-*/
-void alive() {
-
-
-  String firstFreeHostname = findFirstFreeHostname();
-
-
-
-  /* used to answer a xhr call from the browser that is connected to the server */
-  String result = "";
-  /*
-  String myIP = "";
-  result += "IP address: ";
-  if (WiFi.getMode() == WIFI_AP)
-  {
-    myIP = WiFi.softAPIP().toString();
-  }
-  if (WiFi.getMode() == WIFI_STA)
-  {
-    myIP = WiFi.localIP().toString();
-  }
-  result += myIP;
-  */
-  result += firstFreeHostname;
-  result += "\r\n";
-  String allowServer = pSettings->getTargetServer();
-  
-  if ((pSettings->getTargetPort() != 80) && (pSettings->getTargetPort() != 443))
-  {
-    allowServer += ":" + pSettings->getTargetPort();
-  }  
-  server.sendHeader("Cache-Control", "no-cache");
-  server.sendHeader("Connection", "keep-alive");
-  server.sendHeader("Pragma", "no-cache");
-  server.sendHeader("Access-Control-Allow-Origin", allowServer);
-  server.send(200, "text/html", result);
 }
 
 void showSettings() {
@@ -871,10 +803,12 @@ void handleDeviceSettings()
     String _targetServer = "";
     String _targetPort = "";
     String _targetPath = "";
+    /*    still available in settings
     String _allowSendingData = "";
     String _isOpen = "";
     String _showData = "";
     String _message = "";
+    */
     for (uint8_t i=0; i< server.args(); i++){
       if (server.argName(i) == "name") {
         _name = server.arg(i);
@@ -897,20 +831,9 @@ void handleDeviceSettings()
       if (server.argName(i) == "targetPath") {
         _targetPath = server.arg(i);
       }
-      if (server.argName(i) == "allowSendingData") {
-        _allowSendingData = server.arg(i);
-      }
-      if (server.argName(i) == "isOpen") {
-        _isOpen = server.arg(i);
-      }
-      if (server.argName(i) == "showData") {
-        _showData = server.arg(i);
-      }
-      if (server.argName(i) == "message") {
-        _message = server.arg(i);
-      }
     }
-    // zoek name (is device, targetServer of targetserverData en dan de andere parameters)
+    // check name (is device, targetServer or targetserverData and then the corresponding parameters)
+    // check name (is device or targetServer and then the corresponding parameters)
     if (_name == "device")
     {
       if (_startWiFiMode == "ap") {
@@ -928,6 +851,7 @@ void handleDeviceSettings()
       pSettings->setTargetPort(_targetPort);
       pSettings->setTargetPath(_targetPath);
     }
+    /*    still available in settings
     if (_name == "targetServerData")
     {
       pSettings->setAllowSendData(_allowSendingData);
@@ -935,6 +859,7 @@ void handleDeviceSettings()
       pSettings->setShowData(_showData);
       pSettings->setTargetServerMessage(_message);  // message will not be saved in EEPROM
     }
+    */
     if (argumentCounter > 0) {
       pSettings->saveConfigurationSettings();
       result += "Device data has been saved\n";
@@ -973,7 +898,6 @@ String getValueFromJSON(String key, String responseData)
 
 void processServerData(String responseData)
 {
-  //Serial.println(responseData);
   String proposedUUID = getValueFromJSON("proposedUUID", responseData);
   if ((proposedUUID != "") && (pSettings->getDeviceKey() != proposedUUID))
   {
@@ -994,7 +918,6 @@ void requestCB(void* optParm, asyncHTTPrequest* request, int readyState){
     if (request->responseHTTPcode() == 200)
     {
       String response = request->responseText();
-      //Serial.println(response);
       processServerData(response);
     }
     else
@@ -1006,7 +929,6 @@ void requestCB(void* optParm, asyncHTTPrequest* request, int readyState){
     }
   }
 }
-
 
 void toggleWiFi()
 {
@@ -1027,15 +949,15 @@ void toggleWiFi()
 void initHardware()
 {
   Serial.begin(115200);
-  pinMode(IR_SEND, OUTPUT);      // default LOW
-  pinMode(IR_RECEIVE_1, INPUT);  // default down
-  pinMode(IR_RECEIVE_2, INPUT);  // default down
+  pinMode(IR_SEND, OUTPUT);
+  pinMode(IR_RECEIVE_1, INPUT);  // default LOW
+  pinMode(IR_RECEIVE_2, INPUT);  // default LOW
 
-  pinMode(BLUE_LED, OUTPUT);
+  pinMode(PULSE_LED, OUTPUT);
   pinMode(ACCESSPOINT_LED, OUTPUT);
   pinMode(STATION_LED, OUTPUT);
 
-  pinMode(BUTTON, INPUT_PULLUP);
+  pinMode(BUTTON, INPUT_PULLUP); // default HIGH
 }
 
 void initServer()
@@ -1044,7 +966,6 @@ void initServer()
   // start webserver
 
   server.on("/help/", handleHelp);
-  server.on("/count/", handleCountPage);
 
   // handles notFound
   server.onNotFound(handleHelp);
@@ -1057,11 +978,11 @@ void initServer()
   server.on("/wifiConnect/", handleWifiConnect);
   server.on("/deviceSettings/", handleDeviceSettings);
   server.on("/language/", handleLanguage);
-
-  // data handler
-  server.on("/data.sse/", handleSse);
+  server.on("/update/", handleVersion);
+  server.on("/data.sse/", handleSse);         // sse for handleCountPage on local server
 
   // url-commands, not used in normal circumstances
+  server.on("/count/", handleCountPage);
   server.on("/ap/", switchToAccessPoint);
   server.on("/network/", switchToNetwork);
   server.on("/settings/", handleArguments);
@@ -1070,14 +991,9 @@ void initServer()
   server.on("/getSettings/", getSettings);
   server.on("/saveSettings/", saveSettings);
   server.on("/reset/", resetWiFiManagerToFactoryDefaults);
-  server.on("/update/", handleVersion);
 
   // handles debug
   server.on("/debug/", mydebug);
-
-  // handles a check if this url is available
-  // remove this when clients are availabe
-  server.on("/alive/", alive);
 
   server.begin();
   Serial.println("HTTP server started");
@@ -1124,13 +1040,12 @@ void setup()
   echoInterruptOn();
 
   buttonInterruptOn();
-  digitalWrite(IR_SEND, HIGH);
+  digitalWrite(IR_SEND, HIGH);   // always on
 }
 
 void loop()
 {
   // update should be run on every loop
-  //mdns.update();
   MDNS.update();
 
   if (detectUpdateFlag == true)
@@ -1160,20 +1075,18 @@ void loop()
     if (millis() - lastSendMillis > pSettings->getSEND_PERIOD())
     {
       if ((aRequest.readyState() == 0) || (aRequest.readyState() == 4)) {
-          sendDataToTarget(&aRequest, wifiClient, pSettings, String(WiFi.macAddress()), revolutions, viewPulsesPerMinute);
+        sendDataToTarget(&aRequest, wifiClient, pSettings, String(WiFi.macAddress()), revolutions, viewPulsesPerMinute);
       }
       lastSendMillis = millis();
     }
     String response = getAsyncResponse(&aRequest);
     if (response != "") 
     {
-      //Serial.println(response);
       processServerData(response);
     }
   }
 
   // For automatic Reset after loosing WiFi connection in STA mode
-
   if ((WiFi.getMode() == WIFI_AP) && (eepromStartModeAP == false))
   {
     echoInterruptOff();
@@ -1181,7 +1094,6 @@ void loop()
     {
       no_sta_counter +=1;
       delay(50);          // small value because loop must continue for other purposes
-      //Serial.print(no_sta_counter);
     }
     else {
       no_sta_counter = 0;

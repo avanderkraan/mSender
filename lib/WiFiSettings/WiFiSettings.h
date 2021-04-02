@@ -23,7 +23,7 @@ private:
   String ssidAccessPoint = "";
 
   /* Password */
-  String passwordAccessPoint = "admin";
+  String passwordAccessPoint = "administrator";
 
   /* SSID */
   String ssidNetwork = "";

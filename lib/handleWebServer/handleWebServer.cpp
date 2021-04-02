@@ -126,8 +126,10 @@ void help(ESP8266WebServer &server, Settings * pSettings)
 
   result += "Menu\r\n";
   result += "<br><br><br>\r\n";
+  /*
   result += "<a href='/count/'>Counter</a> show pulses and number of blades per minute\r\n";
   result += "<br><br>\r\n";
+  */
   result += "<a href='/help/'>help</a> help/home screen\r\n";
   result += "<br><br>\r\n";
   result += "<a href='/device/'>Counter settings</a> ratio, WiFi mode, Server settings\r\n";
@@ -347,8 +349,8 @@ void device(ESP8266WebServer &server, Settings * pSettings)
   result += "<br><br>\r\n";
   result += "<input type=\"radio\" name=\"settings\" onclick=\"displaySettings()\" value=\"device\" checked>Device\r\n";
   result += "<br>\r\n";
-  result += "<input type=\"radio\" name=\"settings\" onclick=\"displaySettings()\" value=\"targetServerData\">Target server data\r\n";
-  result += "<br>\r\n";
+  //result += "<input type=\"radio\" name=\"settings\" onclick=\"displaySettings()\" value=\"targetServerData\">Target server data\r\n";
+  //result += "<br>\r\n";
   result += "<input type=\"radio\" name=\"settings\" onclick=\"displaySettings()\" value=\"targetServer\">Target server\r\n";
   result += "<br>\r\n";
   result += "<br>\r\n";
@@ -387,6 +389,7 @@ void device(ESP8266WebServer &server, Settings * pSettings)
   result += "  <input type=\"button\" name=\"deviceCancelButton\" value=\"Cancel\" onclick=\"cancelSettings()\">\r\n";
   result += "</div>\r\n";
   result += "\r\n";
+  /*    still available in settings
   result += "<div id=\"targetServerData\">\r\n";
   result += "      <br>\r\n";
   result += "      Handle data for the target server\r\n";
@@ -431,6 +434,7 @@ void device(ESP8266WebServer &server, Settings * pSettings)
   result += "  <input type=\"button\" name=\"targetServerDataCancelButton\" value=\"Cancel\" onclick=\"cancelSettings()\">\r\n";
   result += "</div>\r\n";
   result += "\r\n";
+  */
   result += "<div id=\"targetServer\">\r\n";
   result += "    <br>\r\n";
   result += "    Target server\r\n";
@@ -592,6 +596,7 @@ void device(ESP8266WebServer &server, Settings * pSettings)
   result += "        sendData(params);\r\n";
   result += "  }\r\n";
   result += "\r\n";
+  /*    still available in settings
   result += "  function saveTargetServerData(content) {\r\n";
   result += "        var children = content.parentNode.childNodes;\r\n";
   result += "        var allowSendingData = \"\";\r\n";
@@ -624,6 +629,7 @@ void device(ESP8266WebServer &server, Settings * pSettings)
   result += "        sendData(params);\r\n";
   result += "    }\r\n";
   result += "\r\n";
+  */
   result += "  function saveTargetServer(content) {\r\n";
   result += "        var children = content.parentNode.childNodes;\r\n";
   result += "        var targetServer = \"\";\r\n";
@@ -1117,8 +1123,10 @@ void help_nl(ESP8266WebServer &server, Settings * pSettings)
 
   result += "Menu\n";
   result += "<br><br><br>\r\n";
+  /*
   result += "<a href='/count/'>Teller</a> tellerstanden en aantal enden per minuut\r\n";
   result += "<br><br>\r\n";
+  */
   result += "<a href='/help/'>help</a> begin/help scherm\r\n";
   result += "<br><br>\r\n";
   result += "<a href='/device/'>Teller instellingen</a> ratio, WiFi modus, Server instellingen\r\n";
@@ -1337,8 +1345,8 @@ void device_nl(ESP8266WebServer &server, Settings * pSettings)
   result += "<br><br>\r\n";
   result += "<input type=\"radio\" name=\"settings\" onclick=\"displaySettings()\" value=\"device\" checked>Teller\r\n";
   result += "<br>\r\n";
-  result += "<input type=\"radio\" name=\"settings\" onclick=\"displaySettings()\" value=\"targetServerData\">Gegevens naar de server\r\n";
-  result += "<br>\r\n";
+  //result += "<input type=\"radio\" name=\"settings\" onclick=\"displaySettings()\" value=\"targetServerData\">Gegevens naar de server\r\n";
+  //result += "<br>\r\n";
   result += "<input type=\"radio\" name=\"settings\" onclick=\"displaySettings()\" value=\"targetServer\">Server instellingen\r\n";
   result += "<br>\r\n";
   result += "<br>\r\n";
@@ -1377,6 +1385,7 @@ void device_nl(ESP8266WebServer &server, Settings * pSettings)
   result += "  <input type=\"button\" name=\"deviceCancelButton\" value=\"Cancel\" onclick=\"cancelSettings()\">\r\n";
   result += "</div>\r\n";
   result += "\r\n";
+  /*    still available in settings
   result += "<div id=\"targetServerData\">\r\n";
   result += "      <br>\r\n";
   result += "      Verwerking van gegevens voor de server\r\n";
@@ -1421,6 +1430,7 @@ void device_nl(ESP8266WebServer &server, Settings * pSettings)
   result += "  <input type=\"button\" name=\"targetServerDataCancelButton\" value=\"Cancel\" onclick=\"cancelSettings()\">\r\n";
   result += "</div>\r\n";
   result += "\r\n";
+  */
   result += "<div id=\"targetServer\">\r\n";
   result += "    <br>\r\n";
   result += "    Server\r\n";
@@ -1582,6 +1592,7 @@ void device_nl(ESP8266WebServer &server, Settings * pSettings)
   result += "        sendData(params);\r\n";
   result += "  }\r\n";
   result += "\r\n";
+  /*    still available in settings
   result += "  function saveTargetServerData(content) {\r\n";
   result += "        var children = content.parentNode.childNodes;\r\n";
   result += "        var allowSendingData = \"\";\r\n";
@@ -1614,6 +1625,7 @@ void device_nl(ESP8266WebServer &server, Settings * pSettings)
   result += "        sendData(params);\r\n";
   result += "    }\r\n";
   result += "\r\n";
+  */
   result += "  function saveTargetServer(content) {\r\n";
   result += "        var children = content.parentNode.childNodes;\r\n";
   result += "        var targetServer = \"\";\r\n";

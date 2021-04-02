@@ -4,29 +4,37 @@
 String getSendData(Settings * pSettings, String macAddress, uint32_t revolutions, uint32_t viewPulsesPerMinute) {
   String result = "{";
   result += "\"data\": {";
-  result += "\"revolutions\":";
+  result += "\"r\":";        // revolutions of the main axis
   result += "\"";
   result += revolutions;
+  /*
   result += "\",";
   result += "\"rawCounter\":";
   result += "\"";
   result += pSettings->getCounter();
+  */
   result += "\",";
-  result += "\"viewPulsesPerMinute\":";
+  result += "\"bpm\":";      // blades per minute (enden in dutch)
   result += "\"";
   result += viewPulsesPerMinute;
   result += "\",";
-  result += "\"firmwareVersion\":";
+  result += "\"b\":";        // number of blades
+  result += "\"";
+  result += pSettings->blades;
+
+  result += "\",";
+  result += "\"v\":";        // firmwareVersion
   result += "\"";
   result += pSettings->getFirmwareVersion();
   result += "\",";
-  result += "\"deviceKey\":";
+  result += "\"key\":";      // deviceKey
   result += "\"";
   result += pSettings->getDeviceKey();
   result += "\",";
-  result += "\"macAddress\":";
+  result += "\"mac\":";      // macAddress
   result += "\"";
   result += macAddress;
+  /*
   result += "\",";
   result += "\"isOpen\":";
   result += "\"";
@@ -40,6 +48,7 @@ String getSendData(Settings * pSettings, String macAddress, uint32_t revolutions
   result += "\"";
   result += pSettings->getTargetServerMessage();
   result += "\"";
+  */
   result += "}";
   result += "}";
   return result;
