@@ -898,14 +898,14 @@ String getValueFromJSON(String key, String responseData)
 
 void processServerData(String responseData)
 {
-  String proposedUUID = getValueFromJSON("proposedUUID", responseData);
+  String proposedUUID = getValueFromJSON("pKey", responseData);
   if ((proposedUUID != "") && (pSettings->getDeviceKey() != proposedUUID))
   {
     pSettings->setDeviceKey(proposedUUID);
     pSettings->saveConfigurationSettings(); // save to EEPROM
   }
 
-  String pushFirmwareVersion = getValueFromJSON("pushFirmware", responseData);
+  String pushFirmwareVersion = getValueFromJSON("pFv", responseData);
   if (pushFirmwareVersion != "")
   {
     detectUpdateFlag = true;

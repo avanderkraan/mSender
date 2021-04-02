@@ -130,7 +130,7 @@ void help(ESP8266WebServer &server, Settings * pSettings)
   result += "<a href='/count/'>Counter</a> show pulses and number of blades per minute\r\n";
   result += "<br><br>\r\n";
   */
-  result += "<a href='/help/'>help</a> help/home screen\r\n";
+  result += "<a href='/help/'>Help</a> help/home screen\r\n";
   result += "<br><br>\r\n";
   result += "<a href='/device/'>Counter settings</a> ratio, WiFi mode, Server settings\r\n";
   result += "<br><br>\r\n";
@@ -1127,7 +1127,7 @@ void help_nl(ESP8266WebServer &server, Settings * pSettings)
   result += "<a href='/count/'>Teller</a> tellerstanden en aantal enden per minuut\r\n";
   result += "<br><br>\r\n";
   */
-  result += "<a href='/help/'>help</a> begin/help scherm\r\n";
+  result += "<a href='/help/'>Help</a> begin/help scherm\r\n";
   result += "<br><br>\r\n";
   result += "<a href='/device/'>Teller instellingen</a> ratio, WiFi modus, Server instellingen\r\n";
   result += "<br><br>\r\n";
