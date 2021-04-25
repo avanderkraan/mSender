@@ -45,6 +45,7 @@ uint32_t startPulse = millis();     // set the offset time for a passing a pulse
 uint32_t pulsesPerMinute = 0;       // holds the value of pulses per minute
 uint32_t revolutions = 0;           // holds the value of revolutions of the first axis, calculated with ratio
 uint32_t viewPulsesPerMinute = 0;   // holds the value of ends per minute calculated with ratio
+uint32_t pulseLedOnTime = millis(); // holds the last time a pulse was detected, used as flag for the pulse_led
 
 Settings settings = Settings();
 Settings* pSettings = &settings;
@@ -284,13 +285,6 @@ void writeResult(WiFiClient wifiClient, String result) {
   wifiClient.flush();
 }
 
-/* flashes PIN, unit is microseconds (0-256) */
-void flashPin(uint8_t pin, uint8_t microSec) {
-  digitalWrite(pin, HIGH);
-  delayMicroseconds(microSec);   // delay in the loop could cause an exception (9) when using interrupts
-  digitalWrite(pin, LOW);
-}
-
 void checkGlobalPulseInLoop() {
   // sets value to 0 after a period of time
   uint32_t elapsedTime;
@@ -378,7 +372,8 @@ void ICACHE_RAM_ATTR detectPulse() {  // ICACHE_RAM_ATTR is voor interrupts
       (permissionToDetect == true) )
   {
     permissionToDetect = false;
-    flashPin(PULSE_LED, 100);
+    digitalWrite(PULSE_LED, HIGH);
+    pulseLedOnTime = millis();
   }
 
   if ( (digitalRead(IR_RECEIVE_1) == false) && 
@@ -515,6 +510,9 @@ void mydebug() {
 
   Serial.print("device key: ");
   Serial.println(pSettings->getDeviceKey());
+
+  Serial.print("MAC address: ");
+  Serial.println(WiFi.macAddress());
 
   server.sendHeader("Cache-Control", "no-cache");
   server.sendHeader("Connection", "keep-alive");
@@ -1103,4 +1101,8 @@ void loop()
   }
 
   checkGlobalPulseInLoop();
+  if (millis() > pulseLedOnTime + 1)
+  {
+    digitalWrite(PULSE_LED, LOW);
+  } 
 }
