@@ -21,7 +21,6 @@ String getSendData(Settings * pSettings, String macAddress, uint32_t revolutions
   result += "\"b\":";        // number of blades
   result += "\"";
   result += pSettings->blades;
-
   result += "\",";
   result += "\"v\":";        // firmwareVersion
   result += "\"";
@@ -34,8 +33,8 @@ String getSendData(Settings * pSettings, String macAddress, uint32_t revolutions
   result += "\"mac\":";      // macAddress
   result += "\"";
   result += macAddress;
+  result += "\"";
   /*
-  result += "\",";
   result += "\"isOpen\":";
   result += "\"";
   result += String(pSettings->getIsOpen());
