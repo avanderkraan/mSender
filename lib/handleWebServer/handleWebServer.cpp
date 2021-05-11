@@ -119,6 +119,9 @@ void help(ESP8266WebServer &server, Settings * pSettings)
   result += "<div id=\"sendMessage\"></div>\r\n";
   result += "<br><br>\r\n";
 
+  result += "<input id='restartButton' type='button' onclick='restart()' value='Restart'<br>\r\n";
+  result += "<br><br>\r\n";
+
   result += "Version: <span id='version'></span>\r\n";
   result += " <input id='updateFirmwareButton' type='button' onclick='updateFirmware()' value='Update Firmware'<br>\r\n";
   result += " <div id=\"updateFirmwareMessage\"><div>\r\n";
@@ -182,10 +185,21 @@ void help(ESP8266WebServer &server, Settings * pSettings)
   result += "<br>\r\n";
   */
   result += "<script>\r\n";
+  result += "  function restart() {\r\n";
+  result += "    document.getElementById(\"restartButton\").disabled = true\r\n";
+  result += "    document.getElementById(\"updateFirmwareButton\").disabled = true\r\n";
+  result += "    document.getElementById(\"updateFirmwareMessage\").innerHTML = \"Please refresh this page after about 1 minute\"\r\n";
+  result += "    var params = \"name=restart\";\r\n";
+  result += "    sendUpdateFirmware(params, \"/restart/\");\r\n";
+  result += "  };\r\n";
+  result += "</script>\r\n";
+
+  result += "<script>\r\n";
   result += "  document.getElementById(\"version\").innerHTML = \"";
   result += pSettings->getFirmwareVersion();
   result += "\";\r\n";
   result += "  function updateFirmware() {\r\n";
+  result += "    document.getElementById(\"restartButton\").disabled = true\r\n";
   result += "    document.getElementById(\"updateFirmwareButton\").disabled = true\r\n";
   result += "    document.getElementById(\"updateFirmwareMessage\").innerHTML = \"Please refresh this page after about 1 minute\"\r\n";
   result += "    var params = \"name=update\";\r\n";
@@ -870,7 +884,7 @@ void wifi(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWiFiSe
   result += "        password = children[i].value || \"\";\r\n";
   result += "      }\r\n";
   result += "    }\r\n";
-  result += "    var params = \"name=ap\" + \"&ssid=\" + ssid + \"&password=\" + password;\r\n";
+  result += "    var params = \"name=ap\" + \"&ssid=\" + encodeURIComponent(ssid) + \"&password=\" + encodeURIComponent(password);\r\n";
   result += "    sendData(params);\r\n";
   result += "    //var json_upload = JSON.stringify({name:\"ap\", ssid:ssid, password:password});\r\n";
   result += "    //sendData(json_upload);\r\n";
@@ -885,7 +899,7 @@ void wifi(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWiFiSe
   result += "        password = children[i].value || \"\";\r\n";
   result += "      }\r\n";
   result += "    }\r\n";
-  result += "    var params = \"name=network\" + \"&ssid=\" + ssid + \"&password=\" + password;\r\n";
+  result += "    var params = \"name=network\" + \"&ssid=\" + encodeURIComponent(ssid) + \"&password=\" + encodeURIComponent(password);\r\n";
   result += "    sendData(params);\r\n";
   result += "    //var json_upload = JSON.stringify({name:\"network\", ssid:ssid, password:password});\r\n";
   result += "    //sendData(json_upload);\r\n";
@@ -1116,6 +1130,9 @@ void help_nl(ESP8266WebServer &server, Settings * pSettings)
   result += "<div id=\"sendMessage\"></div>\r\n";
   result += "<br><br>\r\n";
 
+  result += "<input id='restartButton' type='button' onclick='restart()' value='Restart'<br>\r\n";
+  result += "<br><br>\r\n";
+
   result += "Versie: <span id='version'></span>\r\n";
   result += " <input id='updateFirmwareButton' type='button' onclick='updateFirmware()' value='Update Firmware'<br>\r\n";
   result += " <div id=\"updateFirmwareMessage\"><div>\r\n";
@@ -1181,10 +1198,21 @@ void help_nl(ESP8266WebServer &server, Settings * pSettings)
   result += "<br>\r\n";
   */
   result += "<script>\r\n";
+  result += "  function restart() {\r\n";
+  result += "    document.getElementById(\"restartButton\").disabled = true\r\n";
+  result += "    document.getElementById(\"updateFirmwareButton\").disabled = true\r\n";
+  result += "    document.getElementById(\"updateFirmwareMessage\").innerHTML = \"Please refresh this page after about 1 minute\"\r\n";
+  result += "    var params = \"name=restart\";\r\n";
+  result += "    sendUpdateFirmware(params, \"/restart/\");\r\n";
+  result += "  };\r\n";
+  result += "</script>\r\n";
+
+  result += "<script>\r\n";
   result += "  document.getElementById(\"version\").innerHTML = \"";
   result += pSettings->getFirmwareVersion();
   result += "\";\r\n";
   result += "  function updateFirmware() {\r\n";
+  result += "    document.getElementById(\"restartButton\").disabled = true\r\n";
   result += "    document.getElementById(\"updateFirmwareButton\").disabled = true\r\n";
   result += "    document.getElementById(\"updateFirmwareMessage\").innerHTML = \"Na ongeveer 1 minuut kun je de pagina verversen\"\r\n";
   result += "    var params = \"name=update\";\r\n";
@@ -1866,7 +1894,7 @@ void wifi_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWiF
   result += "        password = children[i].value || \"\";\r\n";
   result += "      }\r\n";
   result += "    }\r\n";
-  result += "    var params = \"name=ap\" + \"&ssid=\" + ssid + \"&password=\" + password;\r\n";
+  result += "    var params = \"name=ap\" + \"&ssid=\" + encodeURIComponent(ssid) + \"&password=\" + encodeURIComponent(password);\r\n";
   result += "    sendData(params);\r\n";
   result += "    //var json_upload = JSON.stringify({name:\"ap\", ssid:ssid, password:password});\r\n";
   result += "    //sendData(json_upload);\r\n";
@@ -1881,7 +1909,7 @@ void wifi_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWiF
   result += "        password = children[i].value || \"\";\r\n";
   result += "      }\r\n";
   result += "    }\r\n";
-  result += "    var params = \"name=network\" + \"&ssid=\" + ssid + \"&password=\" + password;\r\n";
+  result += "    var params = \"name=network\" + \"&ssid=\" + encodeURIComponent(ssid) + \"&password=\" + encodeURIComponent(password);\r\n";
   result += "    sendData(params);\r\n";
   result += "    //var json_upload = JSON.stringify({name:\"network\", ssid:ssid, password:password});\r\n";
   result += "    //sendData(json_upload);\r\n";

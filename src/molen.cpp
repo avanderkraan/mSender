@@ -71,7 +71,7 @@ bool detectButtonFlag = false;
 // detectUpdateFlag is True is an update from the server is requested
 bool detectUpdateFlag = false;
 
-// updateSucceeded is true is the update succeeded, so a restart can be done
+// updateSucceeded is true is the update succeeded or if a restart is asked, so a restart can be done
 bool updateSucceeded = false;
 
 // Forward declaration
@@ -607,7 +607,50 @@ void handleVersion() {
     server.sendHeader("Cache-Control", "no-cache");
     server.sendHeader("Connection", "keep-alive");
     server.sendHeader("Pragma", "no-cache");
+    server.send(200, "text/html", result_nl);
+  }
+  else
+  {
+    server.sendHeader("Cache-Control", "no-cache");
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Pragma", "no-cache");
     server.send(200, "text/html", result);
+  }
+}
+
+void handleRestart() {
+  echoInterruptOff();    // otherwise the processor could be too busy handling interrupts
+
+  uint8_t argumentCounter = 0;
+  String result = "";
+  String result_nl = "";
+
+  if (server.method() == HTTP_POST)
+  {
+    argumentCounter = server.args();
+    String name = "";
+    for (uint8_t i=0; i< server.args(); i++){
+      if (server.argName(i) == "name") {
+        name = server.arg(i);
+      }
+    }
+    // search name 
+    if (name == "restart")
+    {
+      if (argumentCounter > 0)
+      {
+        updateSucceeded = true;
+        result = "Restart completed";
+        result_nl = "Restart compleet";
+      }
+    }
+  }
+  if (pSettings->getLanguage() == "NL")
+  {
+    server.sendHeader("Cache-Control", "no-cache");
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Pragma", "no-cache");
+    server.send(200, "text/html", result_nl);
   }
   else
   {
@@ -737,6 +780,7 @@ void handleWifiConnect() {
       if (argumentCounter > 0) {
         pWifiSettings->saveAuthorizationAccessPoint();
         result += "Access Point data has been saved\n";
+        result_nl += "Access Point gegevens zijn opgeslagen\n";
       }
     }
     if (name == "network")
@@ -977,6 +1021,7 @@ void initServer()
   server.on("/deviceSettings/", handleDeviceSettings);
   server.on("/language/", handleLanguage);
   server.on("/update/", handleVersion);
+  server.on("/restart/", handleRestart);
   server.on("/data.sse/", handleSse);         // sse for handleCountPage on local server
 
   // url-commands, not used in normal circumstances
