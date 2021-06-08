@@ -840,7 +840,7 @@ void handleDeviceSettings()
     argumentCounter = server.args();  // if argumentCounter > 0 then saveConfigurationSettings
     String _name = "";
     String _startWiFiMode = "";
-    String _counter = "";
+    String _counter = "0";   // set to 0 as from version 0.1.5
     String _ratio = "";
     String _targetServer = "";
     String _targetPort = "";
@@ -858,9 +858,10 @@ void handleDeviceSettings()
       if (server.argName(i) == "startWiFiMode") {
         _startWiFiMode = server.arg(i);
       }
-      if (server.argName(i) == "counter") {
-        _counter = server.arg(i);
-      }
+      // deprecated as from version 0.1.5
+      //if (server.argName(i) == "counter") {
+      //  _counter = server.arg(i);
+      //}
       if (server.argName(i) == "ratio") {
         _ratio = server.arg(i);
       }

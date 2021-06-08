@@ -284,6 +284,9 @@ uint16_t Settings::saveSettings()
   EEPROM.put(address, this->showData);
   address += sizeof(this->showData);
 
+  // deprecated with version 0.1.5
+  // as from 0.1.5 set to zero, so the daycounter on the server will work correctly
+  this->rawCounter = 0;
   EEPROM.put(address, this->rawCounter);
   address += sizeof(this->rawCounter);
 
@@ -589,9 +592,14 @@ uint16_t Settings::saveConfigurationSettings()
   //}
   address += sizeof(this->showData);
 
+  
   //uint32_t check_rawCounter;
   //EEPROM.get(address, check_rawCounter);
   //if (check_rawCounter != this->rawCounter) {
+
+  // deprecated with version 0.1.5
+  // as from 0.1.5 set to zero, so the daycounter on the server will work correctly
+    this->rawCounter = 0;
     EEPROM.put(address, this->rawCounter);
   //}
   address += sizeof(this->rawCounter);
