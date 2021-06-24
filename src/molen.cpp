@@ -391,7 +391,8 @@ void ICACHE_RAM_ATTR detectPulse() {  // ICACHE_RAM_ATTR is voor interrupts
 
     viewPulsesPerMinute = round(pulsesPerMinute / pSettings->pulseFactor);
 
-    revolutions = floor(pSettings->getCounter() / pSettings->pulseFactor);
+    // revolutions depend on the number of blades
+    revolutions = floor(pSettings->getCounter() / (pSettings->pulseFactor * pSettings->blades));
   }
   echoInterruptOn();
 }
@@ -1150,5 +1151,7 @@ void loop()
   if (millis() > pulseLedOnTime + 1)
   {
     digitalWrite(PULSE_LED, LOW);
-  } 
+  }
+
+  digitalWrite(PULSE_LED, LOW);
 }
