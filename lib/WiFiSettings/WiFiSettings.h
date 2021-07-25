@@ -16,7 +16,7 @@ private:
   /* maximum length of SSID Name string, excluding NULL character */
   const uint8_t MAX_SSID = 32;
   
-  /* maximun length of password string, excluding NULL character */
+  /* maximum length of password string, excluding NULL character */
   const uint8_t MAX_PASSWORD = 32;
   
   /* SSID */

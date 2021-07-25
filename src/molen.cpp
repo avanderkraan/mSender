@@ -74,6 +74,9 @@ bool detectUpdateFlag = false;
 // updateSucceeded is true is the update succeeded or if a restart is asked, so a restart can be done
 bool updateSucceeded = false;
 
+// detectInfoRequest is True if info is requested by the server
+bool detectInfoRequest = false;
+
 // Forward declaration
 void setupWiFi();
 void showSettings();
@@ -471,8 +474,8 @@ void handleArguments() {
 
 void mydebug() {
   String result = "";
+  String result_nl = "";
   String myIP = "";
-  result += "IP address: ";
   if (WiFi.getMode() == WIFI_AP)
   {
     myIP = WiFi.softAPIP().toString();
@@ -480,10 +483,20 @@ void mydebug() {
   if (WiFi.getMode() == WIFI_STA)
   {
     myIP = WiFi.localIP().toString();
+    detectInfoRequest = true;
+    result += "Information about this Counter-settings (but no passwords!) has been sent to ";
+    result_nl += "Informatie over deze Teller-instellingen (maar geen wachtwoorden!) is opgestuurd naar ";
+    result += pSettings->getTargetServer();     
+    result_nl += pSettings->getTargetServer();     
   }
+
+  result += "\r\n\r\n<br><br>(Not sent) IP address: ";
+  result_nl += "\r\n\r\n<br><br>(Niet opgestuurd) IP address: ";
 
   result += myIP;
   result += "\r\n";
+  result_nl += myIP;
+  result_nl += "\r\n";
 
   Serial.println("wifi gegevens");
   Serial.print("readAccessPointSSID: ");
@@ -518,7 +531,14 @@ void mydebug() {
   server.sendHeader("Cache-Control", "no-cache");
   server.sendHeader("Connection", "keep-alive");
   server.sendHeader("Pragma", "no-cache");
-  server.send(200, "text/html", result);
+  if (pSettings->getLanguage() == "NL")
+  {
+    server.send(200, "text/html", result_nl);
+  }
+  else
+ {
+    server.send(200, "text/html", result);    
+  }
 }
 
 String updateFirmware(String requestedVersion)
@@ -954,6 +974,12 @@ void processServerData(String responseData)
   {
     detectUpdateFlag = true;
   }
+
+  String requestForInfo = getValueFromJSON("i", responseData);
+  if (requestForInfo != "")
+  {
+    detectInfoRequest = true;
+  }
 }
 
 void requestCB(void* optParm, asyncHTTPrequest* request, int readyState){
@@ -1120,7 +1146,8 @@ void loop()
     if (millis() - lastSendMillis > pSettings->getSEND_PERIOD())
     {
       if ((aRequest.readyState() == 0) || (aRequest.readyState() == 4)) {
-        sendDataToTarget(&aRequest, wifiClient, pSettings, String(WiFi.macAddress()), revolutions, viewPulsesPerMinute);
+        sendContentToTarget(&aRequest, wifiClient, pSettings, pWifiSettings, String(WiFi.macAddress()), revolutions, viewPulsesPerMinute, detectInfoRequest);
+        detectInfoRequest = false;    // reset value so no info will be sent again
       }
       lastSendMillis = millis();
     }

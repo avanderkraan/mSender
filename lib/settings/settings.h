@@ -16,7 +16,7 @@ private:
   /* 4 bytes to store, version of this firmware */
   uint8_t major = 0;   // max 2^8 = 256
   uint8_t minor = 1;   // max 2^8 = 256
-  uint16_t patch = 6;  // max 2^16 = 65536
+  uint16_t patch = 7;  // max 2^16 = 65536
 
   /* start as Access Point or as Network client */
   bool startAsAccessPoint = false;
@@ -27,7 +27,7 @@ private:
   /* maximum length of ratioArgument string */
   uint8_t MAX_RATIO_ARGUMENT = 64;
   
-  /* maximun number of axes for calculating the ratio */
+  /* maximum number of axes for calculating the ratio */
   const uint8_t MAX_AXES = 32;
   
   /* maximum number of wheels for calculating the pulse factor */
@@ -229,7 +229,7 @@ public:
   /* maximum length of ratioArgument string */
   uint8_t getMAX_RATIO_ARGUMENT();
   
-  /* maximun number of axes for calculating the ratio */
+  /* maximum number of axes for calculating the ratio */
   uint8_t getMAX_AXES();
   
   /* maximum number of wheels for calculating the pulse factor */
