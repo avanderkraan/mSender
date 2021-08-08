@@ -16,7 +16,7 @@ private:
   /* 4 bytes to store, version of this firmware */
   uint8_t major = 0;   // max 2^8 = 256
   uint8_t minor = 1;   // max 2^8 = 256
-  uint16_t patch = 7;  // max 2^16 = 65536
+  uint16_t patch = 8;  // max 2^16 = 65536
 
   /* start as Access Point or as Network client */
   bool startAsAccessPoint = false;
@@ -76,7 +76,7 @@ private:
   String targetServerMessage = "";
 
   /* MAX_RATIO_ARGUMENT bytes to store, user-entered ratio as argument, example: "4-72.99.33-80.24" */
-  String ratioArgument = "4-72.33-80";
+  String ratioArgument = "4-4";
   /* MAX_RATIO_ARGUMENT bytes to store, factory setting, user-entered ratio as argument, example: "4-72.99.33-80.24" */
   String factoryRatioArgument = "4-4";
 

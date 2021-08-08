@@ -369,6 +369,7 @@ void device(ESP8266WebServer &server, Settings * pSettings)
   result += "<br>\r\n";
   result += "<br>\r\n";
   result += "<div id=\"device\">\r\n";
+  /*
   result += "    <br>\r\n";
   result += "    Set the WiFi start Mode <input id=\"startWiFiMode\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
   result += pSettings->getFactoryStartModeWiFi();
@@ -382,6 +383,7 @@ void device(ESP8266WebServer &server, Settings * pSettings)
   result += (pSettings->beginAsAccessPoint() == true)?"":"checked";
   result += "> start as Network Station\r\n";
   result += "    <br><br>\r\n";
+  */
   //result += "  Counter: <input type=\"text\" name=\"counter\" min=\"0\" max=\"4294967296\" maxlength=\"10\" size=\"12\" placeholder=\"";
   //result += String(pSettings->getCounter());
   //result += "\" title=\"This shows the current count, you may reset is to another value (0 - 4294967296)\" value=\"\" factorySetting=\"124\" onkeyup=\"checkNumber(this, 'counterMessage', 'Invalid counter (0 - 4294967296)');\">\r\n";
@@ -590,7 +592,7 @@ void device(ESP8266WebServer &server, Settings * pSettings)
   result += "\r\n";
   result += "  function saveDevice(content) {\r\n";
   result += "        var children = content.parentNode.childNodes;\r\n";
-  result += "        var startWiFiMode = \"\";\r\n";
+  //result += "        var startWiFiMode = \"\";\r\n";
   result += "        var counter = \"\";\r\n";
   result += "        var ratio = \"\";\r\n";
   result += "        for (var i = 0; i < children.length; i++) {\r\n";
@@ -607,7 +609,8 @@ void device(ESP8266WebServer &server, Settings * pSettings)
   result += "            }\r\n";
   result += "        }\r\n";
   //result += "        var params = \"name=device\" + \"&startWiFiMode=\" + startWiFiMode + \"&counter=\" + counter + \"&ratio=\" + ratio;\r\n";
-  result += "        var params = \"name=device\" + \"&startWiFiMode=\" + startWiFiMode + \"&ratio=\" + ratio;\r\n";
+  //result += "        var params = \"name=device\" + \"&startWiFiMode=\" + startWiFiMode + \"&ratio=\" + ratio;\r\n";
+  result += "        var params = \"name=device\" + \"&ratio=\" + ratio;\r\n";
   result += "        sendData(params);\r\n";
   result += "  }\r\n";
   result += "\r\n";
@@ -1380,6 +1383,7 @@ void device_nl(ESP8266WebServer &server, Settings * pSettings)
   result += "<br>\r\n";
   result += "<br>\r\n";
   result += "<div id=\"device\">\r\n";
+  /*
   result += "    <br>\r\n";
   result += "    Set de  WiFi start modus in <input id=\"startWiFiMode\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
   result += pSettings->getFactoryStartModeWiFi();
@@ -1393,6 +1397,7 @@ void device_nl(ESP8266WebServer &server, Settings * pSettings)
   result += (pSettings->beginAsAccessPoint() == true)?"":"checked";
   result += "> start als Netwerk Station\r\n";
   result += "    <br><br>\r\n";
+  */
   //result += "  Telstand: <input type=\"text\" name=\"counter\" min=\"0\" max=\"4294967296\" maxlength=\"10\" size=\"12\" placeholder=\"";
   //result += String(pSettings->getCounter());
   //result += "\" title=\"Dit is de huidige telstand, in te stellen naar een waarde (0 - 4294967296)\" value=\"\" factorySetting=\"124\" onkeyup=\"checkNumber(this, 'counterMessage', 'Ongeldig nummer (0 - 4294967296)');\">\r\n";
@@ -1601,7 +1606,7 @@ void device_nl(ESP8266WebServer &server, Settings * pSettings)
   result += "\r\n";
   result += "  function saveDevice(content) {\r\n";
   result += "        var children = content.parentNode.childNodes;\r\n";
-  result += "        var startWiFiMode = \"\";\r\n";
+  //result += "        var startWiFiMode = \"\";\r\n";
   result += "        var counter = \"\";\r\n";
   result += "        var ratio = \"\";\r\n";
   result += "        for (var i = 0; i < children.length; i++) {\r\n";
@@ -1618,7 +1623,8 @@ void device_nl(ESP8266WebServer &server, Settings * pSettings)
   result += "            }\r\n";
   result += "        }\r\n";
   //result += "        var params = \"name=device\" + \"&startWiFiMode=\" + startWiFiMode + \"&counter=\" + counter + \"&ratio=\" + ratio;\r\n";
-  result += "        var params = \"name=device\" + \"&startWiFiMode=\" + startWiFiMode + \"&ratio=\" + ratio;\r\n";
+  //result += "        var params = \"name=device\" + \"&startWiFiMode=\" + startWiFiMode + \"&ratio=\" + ratio;\r\n";
+  result += "        var params = \"name=device\" + \"&ratio=\" + ratio;\r\n";
   result += "        sendData(params);\r\n";
   result += "  }\r\n";
   result += "\r\n";

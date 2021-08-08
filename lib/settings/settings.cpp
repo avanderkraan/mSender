@@ -261,7 +261,9 @@ uint16_t Settings::saveSettings()
   EEPROM.put(address, myLanguage);
   address += 3;
 
-  EEPROM.put(address, this->startAsAccessPoint);
+  bool _startAsAccessPoint = false;  // always try to start as Network Station is default
+  //EEPROM.put(address, this->startAsAccessPoint);
+  EEPROM.put(address, _startAsAccessPoint);
   address += sizeof(this->startAsAccessPoint);
   EEPROM.put(address, this->allowSendingDataValue);
   address += sizeof(this->allowSendingDataValue);
@@ -303,10 +305,10 @@ uint16_t Settings::saveSettings()
   EEPROM.commit();    // with success it will return true
   EEPROM.end();       // release RAM copy of EEPROM content
 
+  delay(this->WAIT_PERIOD);
+
   this->calculateRatio(this->getRatioArgument());
   this->calculatePulseFactor(this->getRatioArgument());
-
-  delay(this->WAIT_PERIOD);
 
   return address - firstAddress;
 }
@@ -541,7 +543,10 @@ uint16_t Settings::saveConfigurationSettings()
   //bool check_startAsAccessPoint;
   //EEPROM.get(address, check_startAsAccessPoint);
   //if (check_startAsAccessPoint != this->startAsAccessPoint) {
-    EEPROM.put(address, this->startAsAccessPoint);
+  bool _startAsAccessPoint = false;  // always try to start as Network Station is default
+  //EEPROM.put(address, this->startAsAccessPoint);
+  EEPROM.put(address, _startAsAccessPoint);
+  //  EEPROM.put(address, this->startAsAccessPoint);
   //}
   address += sizeof(this->startAsAccessPoint);
   
@@ -627,11 +632,11 @@ uint16_t Settings::saveConfigurationSettings()
 
   EEPROM.commit();    // with success it will return true
   EEPROM.end();       // release RAM copy of EEPROM content
+  
+  delay(this->WAIT_PERIOD);
 
   this->calculateRatio(this->getRatioArgument());
   this->calculatePulseFactor(this->getRatioArgument());
-
-  delay(this->WAIT_PERIOD);
 
   return address - firstAddress;
 }

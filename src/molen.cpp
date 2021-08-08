@@ -164,7 +164,7 @@ void setupWiFi(){
   digitalWrite(ACCESSPOINT_LED, HIGH);
   digitalWrite(STATION_LED, LOW);
 
-  pSettings->beginAsAccessPoint(true);
+  pSettings->beginAsAccessPoint(true);  // not saved in EEPROM
  
   echoInterruptOn();  // to prevent error with Delay
 
@@ -206,7 +206,7 @@ void setupWiFiManager () {
 
       digitalWrite(ACCESSPOINT_LED, LOW);
       digitalWrite(STATION_LED, HIGH);
-      pSettings->beginAsAccessPoint(false);
+      pSettings->beginAsAccessPoint(false);  //not saved in EEPROM
     }
   }
   if (networkConnected == false) {
@@ -479,6 +479,8 @@ void mydebug() {
   if (WiFi.getMode() == WIFI_AP)
   {
     myIP = WiFi.softAPIP().toString();
+    result += "\r\n\r\n<br><br>IP address: ";
+    result_nl += "\r\n\r\n<br><br>IP address: ";
   }
   if (WiFi.getMode() == WIFI_STA)
   {
@@ -488,21 +490,26 @@ void mydebug() {
     result_nl += "Informatie over deze Teller-instellingen (maar geen wachtwoorden!) is opgestuurd naar ";
     result += pSettings->getTargetServer();     
     result_nl += pSettings->getTargetServer();     
+    result += "\r\n\r\n<br><br>(Not sent) IP address: ";
+    result_nl += "\r\n\r\n<br><br>(Niet opgestuurd) IP address: ";
   }
 
-  result += "\r\n\r\n<br><br>(Not sent) IP address: ";
-  result_nl += "\r\n\r\n<br><br>(Niet opgestuurd) IP address: ";
 
   result += myIP;
   result += "\r\n";
   result_nl += myIP;
   result_nl += "\r\n";
 
-  Serial.println("wifi gegevens");
   Serial.print("readAccessPointSSID: ");
   Serial.println(pWifiSettings->readAccessPointSSID());
   Serial.print("readNetworkSSID: ");
   Serial.println(pWifiSettings->readNetworkSSID());
+
+  Serial.print("Ratio: ");
+  Serial.println(pSettings->getRatioArgument());
+
+  Serial.print("Start as ");
+  Serial.println(pSettings->beginAsAccessPoint() ? "Access Point" : "Network Station");
 
   Serial.print("Chip ID: ");
   Serial.println(ESP.getFlashChipId());
@@ -860,7 +867,7 @@ void handleDeviceSettings()
     // extract the settings-data and take action
     argumentCounter = server.args();  // if argumentCounter > 0 then saveConfigurationSettings
     String _name = "";
-    String _startWiFiMode = "";
+    //String _startWiFiMode = "";
     String _counter = "0";   // set to 0 as from version 0.1.5
     String _ratio = "";
     String _targetServer = "";
@@ -876,9 +883,10 @@ void handleDeviceSettings()
       if (server.argName(i) == "name") {
         _name = server.arg(i);
       }
-      if (server.argName(i) == "startWiFiMode") {
-        _startWiFiMode = server.arg(i);
-      }
+      // deprecated as of versio 0.1.8
+      //if (server.argName(i) == "startWiFiMode") {
+      //  _startWiFiMode = server.arg(i);
+      //}
       // deprecated as from version 0.1.5
       //if (server.argName(i) == "counter") {
       //  _counter = server.arg(i);
@@ -900,14 +908,19 @@ void handleDeviceSettings()
     // check name (is device or targetServer and then the corresponding parameters)
     if (_name == "device")
     {
+      /*
       if (_startWiFiMode == "ap") {
         pSettings->beginAsAccessPoint(true);
       }
       if (_startWiFiMode == "network") {
         pSettings->beginAsAccessPoint(false);
       }
+      */
       pSettings->setCounter(_counter);
-      pSettings->setRatioArgument(_ratio);
+      if (_ratio != "")
+      {
+        pSettings->setRatioArgument(_ratio);
+      }
     }
     if (_name == "targetServer")
     {
