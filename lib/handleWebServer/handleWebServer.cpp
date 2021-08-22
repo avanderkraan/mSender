@@ -135,7 +135,7 @@ void help(ESP8266WebServer &server, Settings * pSettings)
   */
   result += "<a href='/help/'>Help</a> help/home screen\r\n";
   result += "<br><br>\r\n";
-  result += "<a href='/device/'>Counter settings</a> ratio, WiFi mode, Server settings\r\n";
+  result += "<a href='/device/'>Counter settings</a> ratio, Server settings\r\n";
   result += "<br><br>\r\n";
   result += "<a href='/wifi/'>WiFi</a> settings to connect the Counter to WiFi\r\n";
   result += "<br><br>\r\n";
@@ -1150,7 +1150,7 @@ void help_nl(ESP8266WebServer &server, Settings * pSettings)
   */
   result += "<a href='/help/'>Help</a> begin/help scherm\r\n";
   result += "<br><br>\r\n";
-  result += "<a href='/device/'>Teller instellingen</a> ratio, WiFi modus, Server instellingen\r\n";
+  result += "<a href='/device/'>Teller instellingen</a> ratio, Server instellingen\r\n";
   result += "<br><br>\r\n";
   result += "<a href='/wifi/'>WiFi</a> instellingen om de Teller te koppelen aan WiFi\r\n";
   result += "<br><br>\r\n";

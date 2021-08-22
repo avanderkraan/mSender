@@ -227,6 +227,8 @@ uint16_t Settings::setupUpdatedFirmware()
     address += sizeof(this->minor);
     EEPROM.put(address, this->patch);
     address += sizeof(this->patch);
+
+    EEPROM.commit();    // with success it will return true
     EEPROM.end();  // release RAM copy of EEPROM content
     
     delay(this->WAIT_PERIOD);

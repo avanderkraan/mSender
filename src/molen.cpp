@@ -473,8 +473,21 @@ void handleArguments() {
 }
 
 void mydebug() {
-  String result = "";
-  String result_nl = "";
+  String starthtml = "<!DOCTYPE HTML>\r\n<html>\r\n";
+  starthtml += "<head>\r\n";
+  starthtml += "<meta charset=\"utf-8\">\r\n";
+  starthtml += "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\r\n";
+  starthtml += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\r\n";
+  starthtml += "<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->\r\n";
+  starthtml += "<link rel='icon' type='image/png' href='data:image/png;base64,iVBORw0KGgo='>\r\n";
+  starthtml += "<title>debug</title>\r\n";
+  starthtml += "</head>\r\n";
+  starthtml += "<body>\r\n";
+  String endhtml = "</body>\r\n";
+  endhtml += "</html>\r\n";
+
+  String result = starthtml;
+  String result_nl = starthtml;
   String myIP = "";
   if (WiFi.getMode() == WIFI_AP)
   {
@@ -489,7 +502,28 @@ void mydebug() {
     result += "Information about this Counter-settings (but no passwords!) has been sent to ";
     result_nl += "Informatie over deze Teller-instellingen (maar geen wachtwoorden!) is opgestuurd naar ";
     result += pSettings->getTargetServer();     
-    result_nl += pSettings->getTargetServer();     
+    result_nl += pSettings->getTargetServer();
+    
+    result += "\r\n<br>Firmware version: ";
+    result += pSettings->getFirmwareVersion();
+    result_nl += "\r\n<br>Firmware version: ";
+    result_nl += pSettings->getFirmwareVersion();
+
+    result += "\r\n<br>Ratio: ";
+    result += pSettings->getRatioArgument();
+    result_nl += "\r\n<br>Ratio: ";
+    result_nl += pSettings->getRatioArgument();
+
+    result += "\r\n<br>Access Point SSID: ";
+    result += pWifiSettings->readAccessPointSSID();
+    result_nl += "\r\n<br>Access Point SSID: ";
+    result_nl += pWifiSettings->readAccessPointSSID();
+
+    result += "\r\n<br>Network SSID: ";
+    result += pWifiSettings->readNetworkSSID();
+    result_nl += "\r\n<br>Network SSID: ";
+    result_nl += pWifiSettings->readNetworkSSID();
+
     result += "\r\n\r\n<br><br>(Not sent) IP address: ";
     result_nl += "\r\n\r\n<br><br>(Niet opgestuurd) IP address: ";
   }
@@ -499,6 +533,17 @@ void mydebug() {
   result += "\r\n";
   result_nl += myIP;
   result_nl += "\r\n";
+
+  result += "<br>\r\n";
+  result += "<br>\r\n";
+  result += "<a href='/help/'>Go to the home/help page</a>\r\n";
+  result_nl += "<br>\r\n";
+  result_nl += "<br>\r\n";
+  result_nl += "<a href='/help/'>Ga naar de begin/help pagina</a>\r\n";
+
+
+  result += endhtml;
+  result_nl += endhtml;
 
   Serial.print("readAccessPointSSID: ");
   Serial.println(pWifiSettings->readAccessPointSSID());
