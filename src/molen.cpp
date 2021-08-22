@@ -480,7 +480,7 @@ void mydebug() {
   starthtml += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\r\n";
   starthtml += "<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->\r\n";
   starthtml += "<link rel='icon' type='image/png' href='data:image/png;base64,iVBORw0KGgo='>\r\n";
-  starthtml += "<title>debug</title>\r\n";
+  starthtml += "<title>info</title>\r\n";
   starthtml += "</head>\r\n";
   starthtml += "<body>\r\n";
   String endhtml = "</body>\r\n";
@@ -504,35 +504,34 @@ void mydebug() {
     result += pSettings->getTargetServer();     
     result_nl += pSettings->getTargetServer();
     
-    result += "\r\n<br>Firmware version: ";
-    result += pSettings->getFirmwareVersion();
-    result_nl += "\r\n<br>Firmware version: ";
-    result_nl += pSettings->getFirmwareVersion();
-
-    result += "\r\n<br>Ratio: ";
-    result += pSettings->getRatioArgument();
-    result_nl += "\r\n<br>Ratio: ";
-    result_nl += pSettings->getRatioArgument();
-
-    result += "\r\n<br>Access Point SSID: ";
-    result += pWifiSettings->readAccessPointSSID();
-    result_nl += "\r\n<br>Access Point SSID: ";
-    result_nl += pWifiSettings->readAccessPointSSID();
-
-    result += "\r\n<br>Network SSID: ";
-    result += pWifiSettings->readNetworkSSID();
-    result_nl += "\r\n<br>Network SSID: ";
-    result_nl += pWifiSettings->readNetworkSSID();
-
     result += "\r\n\r\n<br><br>(Not sent) IP address: ";
     result_nl += "\r\n\r\n<br><br>(Niet opgestuurd) IP address: ";
   }
 
-
   result += myIP;
   result += "\r\n";
   result_nl += myIP;
-  result_nl += "\r\n";
+  result_nl += "\r\n<br><br>";
+
+  result += "\r\n<br>Firmware version: ";
+  result += pSettings->getFirmwareVersion();
+  result_nl += "\r\n<br>Firmware version: ";
+  result_nl += pSettings->getFirmwareVersion();
+
+  result += "\r\n<br>Ratio: ";
+  result += pSettings->getRatioArgument();
+  result_nl += "\r\n<br>Ratio: ";
+  result_nl += pSettings->getRatioArgument();
+
+  result += "\r\n<br>Access Point SSID: ";
+  result += pWifiSettings->readAccessPointSSID();
+  result_nl += "\r\n<br>Access Point SSID: ";
+  result_nl += pWifiSettings->readAccessPointSSID();
+
+  result += "\r\n<br>Network SSID: ";
+  result += pWifiSettings->readNetworkSSID();
+  result_nl += "\r\n<br>Network SSID: ";
+  result_nl += pWifiSettings->readNetworkSSID();
 
   result += "<br>\r\n";
   result += "<br>\r\n";
