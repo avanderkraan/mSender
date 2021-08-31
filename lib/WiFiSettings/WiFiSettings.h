@@ -47,16 +47,25 @@ public:
     /* Storage for AP and Network SSID, plus AP and Network Password */
     this->storageSize = 132;   // including 4 NULL characters in total (1 for each part) 
 
+    /* first thing to do is set the start-address for this module to the offsetaddress as defined in Settings */ 
+    this->address = pSettings->getOffsetAddress();
+
     /* if there is not enough space on EEPROM, writing will fail and reading will return an empty String */
     if (pSettings->setOffsetAddress(this->storageSize) == true)  // is there enough space on EEPROM?
     {
       this->storageSizeIsAvailable = true;
-      this->address = pSettings->getOffsetAddress();
 
       if (! this->isInitialized()) {
         this->setAccessPointSSID(String("ESP-" + WiFi.macAddress()));
         this->setAccessPointPassword(this->passwordAccessPoint);
         this->saveAuthorizationAccessPoint();
+      }
+      else
+      {
+        this->ssidNetwork = this->readNetworkSSID();
+        this->passwordNetwork = this->readNetworkPassword();
+        this->ssidAccessPoint = this->readAccessPointSSID();
+        this->passwordAccessPoint = this->readAccessPointPassword();
       }
     }
   };

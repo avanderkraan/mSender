@@ -62,9 +62,6 @@ WiFiSettings* pWifiSettings = &wifiSettings;
 asyncHTTPrequest aRequest;
 long lastSendMillis;
 
-// boolean is true if devicesettings are changed
-bool deviceSettingsHasBeenChanged = false;
-
 // detectButtonFlag lets the program know that a network-toggle is going on
 bool detectButtonFlag = false;
 
@@ -180,6 +177,7 @@ void setupWiFiManager () {
   String mynetworkssid = pWifiSettings->readNetworkSSID();
   if (mynetworkssid != "") {
     String mynetworkpass = pWifiSettings->readNetworkPassword();
+
     WiFi.mode(WIFI_STA);
     WiFi.begin(mynetworkssid, mynetworkpass); 
 
@@ -472,7 +470,7 @@ void handleArguments() {
   showSettings();
 }
 
-void mydebug() {
+void myinfo() {
   String starthtml = "<!DOCTYPE HTML>\r\n<html>\r\n";
   starthtml += "<head>\r\n";
   starthtml += "<meta charset=\"utf-8\">\r\n";
@@ -579,7 +577,6 @@ void mydebug() {
   Serial.print("MAC address: ");
   Serial.println(WiFi.macAddress());
 
-  server.sendHeader("Cache-Control", "no-cache");
   server.sendHeader("Connection", "keep-alive");
   server.sendHeader("Pragma", "no-cache");
   if (pSettings->getLanguage() == "NL")
@@ -859,6 +856,7 @@ void handleWifiConnect() {
     {
       pWifiSettings->setNetworkSSID(ssid);
       pWifiSettings->setNetworkPassword(password);
+
       if (argumentCounter > 0) {
         pWifiSettings->saveAuthorizationNetwork();
         result += "Network connection data has been saved\n";
@@ -917,12 +915,7 @@ void handleDeviceSettings()
     String _targetServer = "";
     String _targetPort = "";
     String _targetPath = "";
-    /*    still available in settings
-    String _allowSendingData = "";
-    String _isOpen = "";
-    String _showData = "";
-    String _message = "";
-    */
+
     for (uint8_t i=0; i< server.args(); i++){
       if (server.argName(i) == "name") {
         _name = server.arg(i);
@@ -972,20 +965,11 @@ void handleDeviceSettings()
       pSettings->setTargetPort(_targetPort);
       pSettings->setTargetPath(_targetPath);
     }
-    /*    still available in settings
-    if (_name == "targetServerData")
-    {
-      pSettings->setAllowSendData(_allowSendingData);
-      pSettings->setEntree(_isOpen);
-      pSettings->setShowData(_showData);
-      pSettings->setTargetServerMessage(_message);  // message will not be saved in EEPROM
-    }
-    */
     if (argumentCounter > 0) {
       pSettings->saveConfigurationSettings();
       result += "Device data has been saved\n";
       result_nl += "Apparaatgegevens zijn opgeslagen\n";
-      deviceSettingsHasBeenChanged = true;  // used to shorten the sleep time, see loop
+
     }
   }
   if (pSettings->getLanguage() == "NL")
@@ -1023,6 +1007,40 @@ void processServerData(String responseData)
   if ((proposedUUID != "") && (pSettings->getDeviceKey() != proposedUUID))
   {
     pSettings->setDeviceKey(proposedUUID);
+    pSettings->saveConfigurationSettings(); // save to EEPROM
+  }
+
+  String proposedRatio = getValueFromJSON("pR", responseData);
+  // check ratio
+  bool ratioOK = true;
+  String charOK = "0123456789.-";
+  if (proposedRatio.indexOf("--") > -1)
+  {
+    ratioOK = false;
+  }
+  if (proposedRatio.indexOf(".-") > -1)
+  {
+    ratioOK = false;
+  }
+  if (proposedRatio.indexOf("-.") > -1)
+  {
+    ratioOK = false;
+  }
+  if (proposedRatio.indexOf("..") > -1)
+  {
+    ratioOK = false;
+  }
+  for (uint8_t i = 0; i < proposedRatio.length(); i++)
+  {
+    if (charOK.indexOf(proposedRatio.charAt(i)) == -1)
+    {
+      ratioOK = false;
+    }
+  }
+
+  if ((ratioOK) && (proposedRatio != "") && (pSettings->getRatioArgument() != proposedRatio))
+  {
+    pSettings->setRatioArgument(proposedRatio);
     pSettings->saveConfigurationSettings(); // save to EEPROM
   }
 
@@ -1120,8 +1138,8 @@ void initServer()
   server.on("/saveSettings/", saveSettings);
   server.on("/reset/", resetWiFiManagerToFactoryDefaults);
 
-  // handles debug
-  server.on("/debug/", mydebug);
+  // handles info
+  server.on("/info/", myinfo);
 
   server.begin();
   Serial.println("HTTP server started");
@@ -1132,6 +1150,7 @@ void setup()
   /* It seems to help preventing ESPerror messages with mode(3,6) when
   using a delay */
   initHardware();
+
   digitalWrite(IR_RECEIVE_1, LOW);
   digitalWrite(IR_RECEIVE_2, LOW);
 

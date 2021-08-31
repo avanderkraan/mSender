@@ -14,9 +14,9 @@ public:
 
 private:
   /* 4 bytes to store, version of this firmware */
-  uint8_t major = 0;   // max 2^8 = 256
-  uint8_t minor = 1;   // max 2^8 = 256
-  uint16_t patch = 9;  // max 2^16 = 65536
+  uint8_t major = 0;    // max 2^8 = 256
+  uint8_t minor = 1;    // max 2^8 = 256
+  uint16_t patch = 10;  // max 2^16 = 65536
 
   /* start as Access Point or as Network client */
   bool startAsAccessPoint = false;
@@ -57,24 +57,6 @@ private:
   /* factoryTargetPath server */
   String factoryTargetPath = "/feed/";
 
-  /* show on the server if the place is open for visitors */
-  bool isOpen = true;
-  /* TODO factoryIsOpenM */
-  bool factoryIsOpen = true;
-
-  /* show on the server the sent data */
-  bool showData = true;
-  /* factoryShowData */
-  bool factoryShowData = true;
-
-  /* show on the server the sent data */
-  bool allowSendingDataValue = true;
-  /* factoryShowData */
-  bool factoryAllowSendingDataValue = true;
-
-  /* message that is shown on the targetServer, comes with the data, message will not be stored */
-  String targetServerMessage = "";
-
   /* MAX_RATIO_ARGUMENT bytes to store, user-entered ratio as argument, example: "4-72.99.33-80.24" */
   String ratioArgument = "4-4";
   /* MAX_RATIO_ARGUMENT bytes to store, factory setting, user-entered ratio as argument, example: "4-72.99.33-80.24" */
@@ -104,8 +86,6 @@ private:
 
   /* 4 bytes to store, counts every pulse, range 0 - 2^32 = 4294967296 */
   uint32_t rawCounter = 0;
-  /* 4 bytes to store, factory setting, counts every pulse, range 0 - 2^32 = 4294967296 */
-  uint32_t factoryRawCounter = 0;
 
   /* sizeof of serialized variable, marked as 'to store' */
   uint16_t storageSize;
@@ -121,7 +101,6 @@ private:
 
 
 public:
-
   /* hold the ratio between measured point and the number of revolutions of the desired object 
      > 1 is accelaration 
      < 1 is decelleration 
@@ -144,12 +123,9 @@ public:
                         sizeof(this->patch) + 
                         3 +                   // language (NL) + 1
                         sizeof(this->startAsAccessPoint) +
-                        sizeof(this->allowSendingDataValue) +
                         33 +                  // max size targetServer + 1
                         sizeof(this->targetPort) + 
                         17 +                  // max size of targetPath + 1
-                        sizeof(this->isOpen) + 
-                        sizeof(this->showData) + 
                         sizeof(this->rawCounter) + 
                         65 +                 // MAX_RATIO_ARGUMENT + 1
                         37;                  // MAX_DEVICEKEY + 1
@@ -192,7 +168,6 @@ private:
   uint16_t setupUpdatedFirmware();
 
 public:
-
   /* get version number, used for firmware updates */
   String getFirmwareVersion();
 
@@ -207,6 +182,9 @@ public:
 
   /* saves settings in EEPROM starting on EEPROM-address (default = 0), returns length of saved bytes */
   uint16_t saveSettings();
+
+  /* erase completeEEPROM, set value ff on every EEPROM Settings address, returns true if it succeeds */
+  bool eraseEEPROM();
 
   /* erase settings, set value ff on every EEPROM Settings address, returns true if it succeeds */
   bool eraseSettings();
@@ -271,8 +249,6 @@ public:
   /* set target path */
   void setTargetPath(String targetPath);
 
-  /* return the factorySetting of rawCounter */
-  uint32_t getFactoryCounter();
   /* set value to pulse counter, also known as rawCounter */
   void setCounter(uint32_t counter);
   void setCounter(String counter);
@@ -303,42 +279,6 @@ public:
 
   /* set start as Access point or as network client */
   void beginAsAccessPoint(bool beginAsAccessPointValue);
-
-  /* for target server */
-  bool allowSendingData();
-
-  /* for target server */
-  void allowSendingData(bool allowSendingDataValue);
-
-  /* for target server */
-  bool getIsOpen();
-
-  /* return factory setting isOpen, translated to "open" or "closed" */
-  String getFactoryEntree();
-
-  /* set isOpen, translated from "open" or "closed" */
-  void setEntree(String entree);
-
-  /* return factory setting showData, translated to "show" of "" */
-  String getFactoryShowData();
-
-  /* set showData, translated from "allow" or "" */
-  void setAllowSendData(String allowSendData);
-
-  /* return factory setting showData, translated to "allow" of "" */
-  String getFactoryAllowSendData();
-
-  /* set showData, translated from "show" or "" */
-  void setShowData(String showData);
-
-  /* for target server */
-  bool getShowData();
-
-  /* for target server */
-  String getTargetServerMessage();
-
-  /* for target server */
-  void setTargetServerMessage(String message);
 
   /* language, automatically saved */
   void setLanguage(String language);

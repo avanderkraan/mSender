@@ -129,61 +129,12 @@ void help(ESP8266WebServer &server, Settings * pSettings)
 
   result += "Menu\r\n";
   result += "<br><br><br>\r\n";
-  /*
-  result += "<a href='/count/'>Counter</a> show pulses and number of blades per minute\r\n";
-  result += "<br><br>\r\n";
-  */
   result += "<a href='/help/'>Help</a> help/home screen\r\n";
   result += "<br><br>\r\n";
   result += "<a href='/device/'>Counter settings</a> ratio, Server settings\r\n";
   result += "<br><br>\r\n";
   result += "<a href='/wifi/'>WiFi</a> settings to connect the Counter to WiFi\r\n";
   result += "<br><br>\r\n";
-  /*
-  result += "<a href='/ap/'>access point</a> set the Counter to act as Access Point (url: <a href='http://molen.local/' target='_blank'>molen.local</a> or <a href='http://192.168.4.1/' target='_blank'>http://192.168.4.1</a>)\r\n";
-  result += "<br><br>\r\n";
-  result += "<a href='/network/'>network station</a> set the Counter to act as part of a WiFi network (url: <a href='http://molen.local/' target='_blank'>molen.local</a> or via a local IP address, last known is: <a href='http://";
-  result += pSettings->getLastNetworkIP();
-  result += "/' target='_blank'>";
-  result += pSettings->getLastNetworkIP();
-  result += "</a>\r\n";
-  result += ")\r\n";
-  result += "<br><br>\r\n";
-  */
-  /*
-  result += "&nbsp;&nbsp;/settings/&nbsp;&nbsp;alter settings with arguments\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;/getSettings/&nbsp;&nbsp;view current saved settings\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;/saveSettings/&nbsp;&nbsp;save current settings\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;/initSettings/&nbsp;&nbsp;give settings factory values\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;/eraseSettings/&nbsp;&nbsp;erase settings\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;/reset/&nbsp;&nbsp;reset WiFi settings\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;/data.sse&nbsp;&nbsp;get streaming data in SSE format, refresh rate is ";
-  result += String(pSettings->SSE_RETRY);
-  result += " ms\r\n";
-  */
-  /*
-  result += "<br><br>\r\n";
-  result += "Valid arguments after /settings/?\r\n";
-  result += "<br><br>\r\n";
-  result += "&nbsp;&nbsp;ratio, used to calculate the measures to revolutions of the first axis\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;&nbsp;&nbsp;Start at the blades side. Give the number of blades, the number of gear teeth of all wheels you encounter until (inclusive) you come to the wheel where the sensor is located and divide them with a point-character\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;&nbsp;&nbsp;For wheels ont the same axis, change the point-character into a minus-character\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;&nbsp;&nbsp;Example:\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;&nbsp;&nbsp;4.72.33.80.24 means: 4 blades and 4 gears to the sensor\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;&nbsp;&nbsp;4-72.33-80.24 means: 4 blades and 1st gear on the same axis. Second and third gear also on the same axis. Fourth gear has the sensor\r\n";
-  result += "<br>\r\n";
-  */
   result += "<script>\r\n";
   result += "  function restart() {\r\n";
   result += "    document.getElementById(\"restartButton\").disabled = true\r\n";
@@ -405,52 +356,6 @@ void device(ESP8266WebServer &server, Settings * pSettings)
   result += "  <input type=\"button\" name=\"deviceCancelButton\" value=\"Cancel\" onclick=\"cancelSettings()\">\r\n";
   result += "</div>\r\n";
   result += "\r\n";
-  /*    still available in settings
-  result += "<div id=\"targetServerData\">\r\n";
-  result += "      <br>\r\n";
-  result += "      Handle data for the target server\r\n";
-  result += "      <br>\r\n";
-  result += "      <input type=\"checkbox\" name=\"allowSendToTarget\" onclick=\"allowSendToTargetCheck(this)\" value=\"allow\" ";
-  result += (pSettings->allowSendingData() == true)?"checked":"";
-  result += "> allow sending data to the target server\r\n";
-  result += "      <input id=\"allowSendToTarget\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  result += pSettings->getFactoryAllowSendData();
-  result += "\" value=\"reset\">\r\n";
-  result += "      <br><br>\r\n";
-  result += "      <div id=\"allowed\">\r\n";
-  result += "        Is the building open? <input id=\"entree\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  result += pSettings->getFactoryEntree();
-  result += "\" value=\"reset\">\r\n";
-  result += "        <br>\r\n";
-  result += "        <input type=\"radio\" name=\"entree\" value=\"open\" ";
-  result += (pSettings->getIsOpen() == true)?"checked":"";
-  result += "> flag as Open\r\n";
-  result += "        <br>\r\n";
-  result += "        <input type=\"radio\" name=\"entree\" value=\"closed\" ";
-  result += (pSettings->getIsOpen() == true)?"":"checked";
-  result += "> flag as Closed\r\n";
-  result += "        <br><br>\r\n";
-  result += "        <input type=\"checkbox\" name=\"showDataOnTarget\" onclick=\"showDataOnTargetCheck(this)\" value=\"show\" ";
-  result += (pSettings->getShowData() == true)?"checked":"";
-  result += "> show speed and message on the target server\r\n";
-  result += "        <input id=\"showDataOnTarget\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  result += pSettings->getFactoryShowData();
-  result += "\" value=\"reset\">\r\n";
-  result += "        <br><br>\r\n";
-  result += "        <div id=\"showMessage\">\r\n";
-  result += "          Message: <input type=\"text\" name=\"message\" maxlength=\"80\" size=\"40\" placeholder=\"message\" value=\"\"> message on the target server (max 80 characters)\r\n";
-  result += "          <input id=\"message\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"\" value=\"reset\">\r\n";
-  result += "          <br><br>\r\n";
-  result += "        </div>\r\n";
-  result += "      </div>\r\n";
-  result += "  <br><br>\r\n";
-  result += "  after 'Save' wait for confirmation.\r\n";
-  result += "  <br>\r\n";
-  result += "  <input id=\"targetServerDataButton\" type=\"button\" name=\"targetServerDataButton\" value=\"Save\" onclick=\"saveTargetServerData(this)\">\r\n";
-  result += "  <input type=\"button\" name=\"targetServerDataCancelButton\" value=\"Cancel\" onclick=\"cancelSettings()\">\r\n";
-  result += "</div>\r\n";
-  result += "\r\n";
-  */
   result += "<div id=\"targetServer\">\r\n";
   result += "    <br>\r\n";
   result += "    Target server\r\n";
@@ -1141,66 +1046,14 @@ void help_nl(ESP8266WebServer &server, Settings * pSettings)
   result += " <input id='updateFirmwareButton' type='button' onclick='updateFirmware()' value='Update Firmware'<br>\r\n";
   result += " <div id=\"updateFirmwareMessage\"><div>\r\n";
   result += "<br><br>\r\n";
-
   result += "Menu\n";
   result += "<br><br><br>\r\n";
-  /*
-  result += "<a href='/count/'>Teller</a> tellerstanden en aantal enden per minuut\r\n";
-  result += "<br><br>\r\n";
-  */
   result += "<a href='/help/'>Help</a> begin/help scherm\r\n";
   result += "<br><br>\r\n";
   result += "<a href='/device/'>Teller instellingen</a> ratio, Server instellingen\r\n";
   result += "<br><br>\r\n";
   result += "<a href='/wifi/'>WiFi</a> instellingen om de Teller te koppelen aan WiFi\r\n";
   result += "<br><br>\r\n";
-  /*
-  result += "<a href='/ap/'>access point</a> stel de Teller in als Access Point (url: <a href='http://molen.local/' target='_blank'>molen.local</a> of <a href='http://192.168.4.1/' target='_blank'>http://192.168.4.1</a>)\r\n";
-  result += "<br><br>\r\n";
-  result += "<a href='/network/'>netwerk station</a> stel de Teller in als onderdeel van een WiFi netwerk (url: <a href='http://molen.local/' target='_blank'>molen.local</a> of via een lokaal IP adres, laatst bekende adres is: <a href='http://";
-  result += pSettings->getLastNetworkIP();
-  result += "/' target='_blank'>";
-  result += pSettings->getLastNetworkIP();
-  result += "</a>\r\n";
-  result += ")\r\n";
-
-  result += "<br><br>\r\n";
-  */
-  // url-commands
-  /*
-  result += "&nbsp;&nbsp;/settings/&nbsp;&nbsp;alter settings with arguments\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;/getSettings/&nbsp;&nbsp;view current saved settings\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;/saveSettings/&nbsp;&nbsp;save current settings\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;/initSettings/&nbsp;&nbsp;give settings factory values\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;/eraseSettings/&nbsp;&nbsp;erase settings\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;/reset/&nbsp;&nbsp;reset WiFi settings\r\n";
-  result += "<br>\r\n";
-  result += "<a href='/data.sse/' target='_blank'>/data.sse/</a> geeft streaming data in SSE format, ververstijd is ";
-  result += String(pSettings->SSE_RETRY);
-  result += " ms\r\n";
-  */
-  /*
-  result += "<br><br>\r\n";
-  result += "Valid arguments after /settings/?\r\n";
-  result += "<br><br>\r\n";
-  result += "&nbsp;&nbsp;ratio, used to calculate the measures to revolutions of the first axis\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;&nbsp;&nbsp;Start at the blades side. Give the number of blades, the number of gear teeth of all wheels you encounter until (inclusive) you come to the wheel where the sensor is located and divide them with a point-character\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;&nbsp;&nbsp;For wheels ont the same axis, change the point-character into a minus-character\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;&nbsp;&nbsp;Example:\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;&nbsp;&nbsp;4.72.33.80.24 means: 4 blades and 4 gears to the sensor\r\n";
-  result += "<br>\r\n";
-  result += "&nbsp;&nbsp;&nbsp;&nbsp;4-72.33-80.24 means: 4 blades and 1st gear on the same axis. Second and third gear also on the same axis. Fourth gear has the sensor\r\n";
-  result += "<br>\r\n";
-  */
   result += "<script>\r\n";
   result += "  function restart() {\r\n";
   result += "    document.getElementById(\"restartButton\").disabled = true\r\n";
@@ -1419,52 +1272,6 @@ void device_nl(ESP8266WebServer &server, Settings * pSettings)
   result += "  <input type=\"button\" name=\"deviceCancelButton\" value=\"Cancel\" onclick=\"cancelSettings()\">\r\n";
   result += "</div>\r\n";
   result += "\r\n";
-  /*    still available in settings
-  result += "<div id=\"targetServerData\">\r\n";
-  result += "      <br>\r\n";
-  result += "      Verwerking van gegevens voor de server\r\n";
-  result += "      <br>\r\n";
-  result += "      <input type=\"checkbox\" name=\"allowSendToTarget\" onclick=\"allowSendToTargetCheck(this)\" value=\"allow\" ";
-  result += (pSettings->allowSendingData() == true)?"checked":"";
-  result += "> toestaan om gegevens naar de server te sturen\r\n";
-  result += "      <input id=\"allowSendToTarget\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  result += pSettings->getFactoryAllowSendData();
-  result += "\" value=\"reset\">\r\n";
-  result += "      <br><br>\r\n";
-  result += "      <div id=\"allowed\">\r\n";
-  result += "        Is het gebouw open? <input id=\"entree\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  result += pSettings->getFactoryEntree();
-  result += "\" value=\"reset\">\r\n";
-  result += "        <br>\r\n";
-  result += "        <input type=\"radio\" name=\"entree\" value=\"open\" ";
-  result += (pSettings->getIsOpen() == true)?"checked":"";
-  result += "> Open\r\n";
-  result += "        <br>\r\n";
-  result += "        <input type=\"radio\" name=\"entree\" value=\"closed\" ";
-  result += (pSettings->getIsOpen() == true)?"":"checked";
-  result += "> Gesloten\r\n";
-  result += "        <br><br>\r\n";
-  result += "        <input type=\"checkbox\" name=\"showDataOnTarget\" onclick=\"showDataOnTargetCheck(this)\" value=\"show\" ";
-  result += (pSettings->getShowData() == true)?"checked":"";
-  result += "> laat de snelheid en de boodschap zien op de server\r\n";
-  result += "        <input id=\"showDataOnTarget\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  result += pSettings->getFactoryShowData();
-  result += "\" value=\"reset\">\r\n";
-  result += "        <br><br>\r\n";
-  result += "        <div id=\"showMessage\">\r\n";
-  result += "          Boodschap: <input type=\"text\" name=\"message\" maxlength=\"80\" size=\"40\" placeholder=\"message\" value=\"\"> boodschap voor op de server (max 80 karakters)\r\n";
-  result += "          <input id=\"message\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"\" value=\"reset\">\r\n";
-  result += "          <br><br>\r\n";
-  result += "        </div>\r\n";
-  result += "      </div>\r\n";
-  result += "  <br><br>\r\n";
-  result += "  Na 'Save' even geduld tot er een bevestiging is.\r\n";
-  result += "  <br>\r\n";
-  result += "  <input id=\"targetServerDataButton\" type=\"button\" name=\"targetServerDataButton\" value=\"Save\" onclick=\"saveTargetServerData(this)\">\r\n";
-  result += "  <input type=\"button\" name=\"targetServerDataCancelButton\" value=\"Cancel\" onclick=\"cancelSettings()\">\r\n";
-  result += "</div>\r\n";
-  result += "\r\n";
-  */
   result += "<div id=\"targetServer\">\r\n";
   result += "    <br>\r\n";
   result += "    Server\r\n";

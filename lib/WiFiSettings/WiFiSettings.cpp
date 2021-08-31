@@ -3,14 +3,15 @@
 bool WiFiSettings::isInitialized() {
   /* if first 8 characters are 0xff then it is considered not initialised */
   uint16_t startAddress = this->address;
-  uint16_t lastAddress = this->address + 8;
+  uint8_t count = 8;
+  uint16_t lastAddress = this->address + count;
   delay(this->WAIT_PERIOD);
 
   EEPROM.begin(this->MAX_EEPROM_SIZE);
-  bool initialised = false;
+  uint8_t initialised = 0;
   for (uint16_t i = startAddress; i < lastAddress; i++) {
-    if ((initialised == false) && (EEPROM.read(i) != 0xff)) {
-      initialised = true;
+    if (EEPROM.read(i) != 0xff) {
+      initialised += 1;
     };
   }
 
@@ -18,7 +19,7 @@ bool WiFiSettings::isInitialized() {
 
   delay(this->WAIT_PERIOD);
  
-  return initialised;
+  return (initialised == count);
 }
 
 uint16_t WiFiSettings::saveAuthorizationAccessPoint()
@@ -196,6 +197,9 @@ String WiFiSettings::readAccessPointSSID()
     EEPROM.get(address, myAccessPointSSID);
     EEPROM.end();  // release RAM copy of EEPROM content
     delay(this->WAIT_PERIOD);
+    if (myAccessPointSSID[0] == 0xff) {
+      return "";
+    }
     return String(myAccessPointSSID);
   }
   return "";
@@ -205,13 +209,16 @@ String WiFiSettings::readAccessPointPassword()
 {
   if (this->getStorageSizeIsAvailable())
   {
-    uint16_t address = this->address + 33;  // Access Point SSID Setting comes second
+    uint16_t address = this->address + 33;  // Access Point Password Setting comes second
     char myAccessPointPassword[33];
     //EEPROM.begin(this->address + this->storageSize);
     EEPROM.begin(this->MAX_EEPROM_SIZE);
     EEPROM.get(address, myAccessPointPassword);
     EEPROM.end();  // release RAM copy of EEPROM content
     delay(this->WAIT_PERIOD);
+    if (myAccessPointPassword[0] == 0xff) {
+      return "";
+    }
     return String(myAccessPointPassword);
   }
   return "";
@@ -221,13 +228,16 @@ String WiFiSettings::readNetworkSSID()
 {  
   if (this->getStorageSizeIsAvailable())
   {
-    uint16_t address = this->address + 66;  // Access Point SSID Setting comes third
+    uint16_t address = this->address + 66;  // Network Station SSID Setting comes third
     char myNetworkSSID[33];
     //EEPROM.begin(this->address + this->storageSize);
     EEPROM.begin(this->MAX_EEPROM_SIZE);
     EEPROM.get(address, myNetworkSSID);
     EEPROM.end();  // release RAM copy of EEPROM content
     delay(this->WAIT_PERIOD);
+    if (myNetworkSSID[0] == 0xff) {
+      return "";
+    }
     return String(myNetworkSSID);
   }
   return "";
@@ -237,13 +247,16 @@ String WiFiSettings::readNetworkPassword()
 {  
   if (this->getStorageSizeIsAvailable())
     {
-    uint16_t address = this->address + 99;  // Access Point SSID Setting comes fourth
+    uint16_t address = this->address + 99;  // Network Station Password Setting comes fourth
     char myNetworkPassword[33];
     //EEPROM.begin(this->address + this->storageSize);
     EEPROM.begin(this->MAX_EEPROM_SIZE);
     EEPROM.get(address, myNetworkPassword);
     EEPROM.end();  // release RAM copy of EEPROM content
     delay(this->WAIT_PERIOD);
+    if (myNetworkPassword[0] == 0xff) {
+      return "";
+    }
     return String(myNetworkPassword);
     }
   return "";

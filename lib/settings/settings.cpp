@@ -203,6 +203,7 @@ uint16_t Settings::setupEEPROM()
   delay(this->WAIT_PERIOD);
   if (!this->isInitialized())
   {
+    this->eraseEEPROM();  // clear complete EEPROM area
     this->initNumber = this->INITCHECK;
     return this->saveSettings();
   }
@@ -267,8 +268,6 @@ uint16_t Settings::saveSettings()
   //EEPROM.put(address, this->startAsAccessPoint);
   EEPROM.put(address, _startAsAccessPoint);
   address += sizeof(this->startAsAccessPoint);
-  EEPROM.put(address, this->allowSendingDataValue);
-  address += sizeof(this->allowSendingDataValue);
 
   char myTargetServer[33];  // one more for the null character
   strcpy(myTargetServer, this->targetServer.c_str());
@@ -283,16 +282,6 @@ uint16_t Settings::saveSettings()
   EEPROM.put(address, myTargetPath);
   address += 17;
 
-  EEPROM.put(address, this->isOpen);
-  address += sizeof(this->isOpen);
-  EEPROM.put(address, this->showData);
-  address += sizeof(this->showData);
-
-  // deprecated with version 0.1.5
-  // as from 0.1.5 set to zero, so the daycounter on the server will work correctly
-  this->rawCounter = 0;
-  EEPROM.put(address, this->rawCounter);
-  address += sizeof(this->rawCounter);
 
   char myRatioArgument[65];  // one more for the null character
   strcpy(myRatioArgument, this->ratioArgument.c_str());
@@ -353,11 +342,30 @@ bool Settings::isInitialized() {
   return (this->initNumber == this->INITCHECK);
 }
 
+bool Settings::eraseEEPROM() {
+  delay(this->WAIT_PERIOD);
+
+  EEPROM.begin(this->MAX_EEPROM_SIZE);
+  // replace values in EEPROM with 0xff
+  for (uint16_t i = 0; i < this->MAX_EEPROM_SIZE; i++) {
+    EEPROM.write(this->address + i,0xff);
+  }
+  bool result = EEPROM.commit();    // with success it will return true
+  EEPROM.end();  // release RAM copy of EEPROM content
+
+  delay(this->WAIT_PERIOD);
+
+  this->setRatioArgument(this->getFactoryRatioArgument());
+  this->calculateRatio(this->getFactoryRatioArgument());
+  this->calculatePulseFactor(this->getFactoryRatioArgument());
+
+  return result;
+}
+
 bool Settings::eraseSettings() {
   delay(this->WAIT_PERIOD);
 
-  //EEPROM.begin(this->storageSize);
-  EEPROM.begin(this->MAX_EEPROM_SIZE);
+  EEPROM.begin(this->storageSize);
   // replace values in EEPROM with 0xff
   for (uint16_t i = 0; i < this->storageSize; i++) {
     EEPROM.write(this->address + i,0xff);
@@ -373,6 +381,7 @@ bool Settings::eraseSettings() {
 
   return result;
 }
+
 
 uint16_t Settings::initSettings()
 {
@@ -401,8 +410,6 @@ uint16_t Settings::initSettings()
 
   EEPROM.put(address, this->factoryStartAsAccessPoint);
   address += sizeof(this->factoryStartAsAccessPoint);
-  EEPROM.put(address, this->factoryAllowSendingDataValue);
-  address += sizeof(this->factoryAllowSendingDataValue);
 
   char myFactoryTargetServer[33];  // one more for the null character
   strcpy(myFactoryTargetServer, this->factoryTargetServer.c_str());
@@ -417,14 +424,6 @@ uint16_t Settings::initSettings()
   EEPROM.put(address, myFactoryTargetPath);
   address += 17;
 
-  EEPROM.put(address, this->factoryIsOpen);
-  address += sizeof(this->factoryIsOpen);
-  EEPROM.put(address, this->factoryShowData);
-  address += sizeof(this->factoryShowData);
-
-  EEPROM.put(address, this->factoryRawCounter);
-  address += sizeof(this->factoryRawCounter);
-
   //uint8_t myMaxRatioArgument = this->MAX_RATIO_ARGUMENT;
   char myRatioArgument[65];  // one more for the null character
   strcpy(myRatioArgument, this->factoryRatioArgument.c_str());
@@ -436,8 +435,6 @@ uint16_t Settings::initSettings()
   strcpy(myDeviceKey, this->factoryDeviceKey.c_str());
   EEPROM.put(address, myDeviceKey);
   address += 37;
-
-  delay(this->WAIT_PERIOD);
 
   EEPROM.commit();    // with success it will return true
   EEPROM.end();       // release RAM copy of EEPROM content
@@ -475,8 +472,6 @@ uint16_t Settings::getSettings()
 
   EEPROM.get(address, this->startAsAccessPoint);
   address += sizeof(this->startAsAccessPoint);
-  EEPROM.get(address, this->allowSendingDataValue);
-  address += sizeof(this->allowSendingDataValue);
 
   char myTargetServer[33];  // one more for the null character
   EEPROM.get(address, myTargetServer);
@@ -491,19 +486,10 @@ uint16_t Settings::getSettings()
   this->targetPath = String(myTargetPath);
   address += 17;
 
-  EEPROM.get(address, this->isOpen);
-  address += sizeof(this->isOpen);
-  EEPROM.get(address, this->showData);
-  address += sizeof(this->showData);
-
-  EEPROM.get(address, this->rawCounter);
-  address += sizeof(this->rawCounter);
-
   //uint8_t myMaxRatioArgument = this->MAX_RATIO_ARGUMENT;
   char myRatioArgument[65];
   EEPROM.get(address, myRatioArgument);
   this->ratioArgument = String(myRatioArgument);
-
   address += 65;
 
   //uint8_t myMaxDeviceKey = sizeof(this->deviceKey);
@@ -551,14 +537,6 @@ uint16_t Settings::saveConfigurationSettings()
   //  EEPROM.put(address, this->startAsAccessPoint);
   //}
   address += sizeof(this->startAsAccessPoint);
-  
-  //bool check_allowSendingDataValue;
-  //EEPROM.get(address, check_allowSendingDataValue);
-  //if (check_allowSendingDataValue != this->allowSendingDataValue) {
-    EEPROM.put(address, this->allowSendingDataValue);
-  //}
-  address += sizeof(this->allowSendingDataValue);
-
 
   //char check_myTargetServer[33];  // one more for the null character
   //EEPROM.get(address, check_myTargetServer);
@@ -584,32 +562,6 @@ uint16_t Settings::saveConfigurationSettings()
     EEPROM.put(address, myTargetPath);
   //}
   address += 17;
-
-  //bool check_isOpen;
-  //EEPROM.get(address, check_isOpen);
-  //if (check_isOpen != this->isOpen) {
-    EEPROM.put(address, this->isOpen);
-  //}
-  address += sizeof(this->isOpen);
-
-  //bool check_showData;
-  //EEPROM.get(address, check_showData);
-  //if (check_showData != this->showData) {
-    EEPROM.put(address, this->showData);
-  //}
-  address += sizeof(this->showData);
-
-  
-  //uint32_t check_rawCounter;
-  //EEPROM.get(address, check_rawCounter);
-  //if (check_rawCounter != this->rawCounter) {
-
-  // deprecated with version 0.1.5
-  // as from 0.1.5 set to zero, so the daycounter on the server will work correctly
-    this->rawCounter = 0;
-    EEPROM.put(address, this->rawCounter);
-  //}
-  address += sizeof(this->rawCounter);
 
   //char check_myRatioArgument[65];  // one more for the null character
   //EEPROM.get(address, check_myRatioArgument);
@@ -658,11 +610,6 @@ bool Settings::setOffsetAddress(uint16_t deltaAddress)
   return true;
 }
 
-uint32_t Settings::getFactoryCounter()
-{
-  return this->factoryRawCounter;
-}
- 
 void Settings::setCounter(uint32_t counter)
 {
   this->rawCounter = counter;
@@ -691,66 +638,6 @@ void Settings::beginAsAccessPoint(bool myBeginAsAccessPointValue)
 String Settings::getFactoryStartModeWiFi()
 {
   return this->factoryStartAsAccessPoint ? "ap" : "network";
-}
-
-bool Settings::allowSendingData()
-{
-  return this->allowSendingDataValue;
-}
-
-void Settings::allowSendingData(bool myAllowSendingDataValue)
-{
-  this->allowSendingDataValue = myAllowSendingDataValue;
-}
-
-bool Settings::getIsOpen()
-{
-  return this->isOpen;
-}
-
-void Settings::setEntree(String entree)
-{
-  this->isOpen = entree == "open";
-}
-
-String Settings::getFactoryEntree()
-{
-  return this->factoryIsOpen ? "open": "closed";
-}
-
-String Settings::getFactoryShowData()
-{
-  return this->factoryShowData ? "show" : "";
-}
-
-void Settings::setAllowSendData(String sendData)
-{
-  this->allowSendingDataValue = sendData == "true";
-}
-
-String Settings::getFactoryAllowSendData()
-{
-  return this->factoryAllowSendingDataValue ? "allow" : "";
-}
-
-void Settings::setShowData(String showData)
-{
-  this->showData = showData == "true";
-}
-
-bool Settings::getShowData()
-{
-  return this->showData;
-}
-
-String Settings::getTargetServerMessage()
-{
-  return this->targetServerMessage;
-}
-
-void Settings::setTargetServerMessage(String message)
-{
-   this->targetServerMessage = message;
 }
 
 String Settings::getFactoryTargetServer()
