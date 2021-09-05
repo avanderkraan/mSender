@@ -7,11 +7,11 @@
 #include "asyncHTTPrequest.h"
 
 /* contains the html that is send to the targetServer */
-String getSendData(Settings * pSettings, String macddress, uint32_t revolutions, uint32_t viewPulsesPerMinute);
+String getSendData(Settings * pSettings, String macddress, uint32_t revolutions, uint32_t bladesPerMinute);
 /* contains the html that is send to the targetServer */
-String getSendInfo(Settings * pSettings, WiFiSettings* pWifiSettings, String macddress, uint32_t revolutions, uint32_t viewPulsesPerMinute);
+String getSendInfo(Settings * pSettings, WiFiSettings* pWifiSettings, String macddress, uint32_t revolutions, uint32_t bladesPerMinute);
 /* sends data to the targetServer */
-void sendContentToTarget(asyncHTTPrequest* pRequest, WiFiClient wifiClient, Settings * pSettings, WiFiSettings* pWifiSettings, String macAddress, uint32_t revolutions, uint32_t viewPulsesPerMinute, bool withInfo);
+void sendContentToTarget(asyncHTTPrequest* pRequest, WiFiClient wifiClient, Settings * pSettings, WiFiSettings* pWifiSettings, String macAddress, uint32_t revolutions, uint32_t bladesPerMinute, bool withInfo);
 /* returns response from the targetServer */
 String getAsyncResponse(asyncHTTPrequest* pRequest);
 

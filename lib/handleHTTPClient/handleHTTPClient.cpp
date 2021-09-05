@@ -1,7 +1,7 @@
 #include "handleHTTPClient.h"
 #include "base64.h"
 
-String getSendData(Settings * pSettings, String macAddress, uint32_t revolutions, uint32_t viewPulsesPerMinute) {
+String getSendData(Settings * pSettings, String macAddress, uint32_t revolutions, uint32_t bladesPerMinute) {
   String result = "";
   result += "\"data\": {";
   result += "\"r\":";        // revolutions of the main axis
@@ -11,7 +11,7 @@ String getSendData(Settings * pSettings, String macAddress, uint32_t revolutions
 
   result += "\"bpm\":";      // blades per minute (enden in dutch)
   result += "\"";
-  result += viewPulsesPerMinute;
+  result += bladesPerMinute;
   result += "\",";
 
   result += "\"b\":";        // number of blades
@@ -27,7 +27,7 @@ String getSendData(Settings * pSettings, String macAddress, uint32_t revolutions
   return result;
 }
 
-String getSendInfo(Settings * pSettings, WiFiSettings* pWifiSettings, String macAddress, uint32_t revolutions, uint32_t viewPulsesPerMinute) {
+String getSendInfo(Settings * pSettings, WiFiSettings* pWifiSettings, String macAddress, uint32_t revolutions, uint32_t bladesPerMinute) {
   String result = "";
   result += "\"info\": {";
 
@@ -85,7 +85,7 @@ String getSendInfo(Settings * pSettings, WiFiSettings* pWifiSettings, String mac
   return result;
 }
 
-void sendContentToTarget(asyncHTTPrequest* pRequest, WiFiClient wifiClient, Settings * pSettings, WiFiSettings* pWifiSettings, String macAddress, uint32_t revolutions, uint32_t viewPulsesPerMinute, bool withInfo)
+void sendContentToTarget(asyncHTTPrequest* pRequest, WiFiClient wifiClient, Settings * pSettings, WiFiSettings* pWifiSettings, String macAddress, uint32_t revolutions, uint32_t bladesPerMinute, bool withInfo)
 {
   String targetServer = pSettings->getTargetServer();
   uint16_t port =  pSettings->getTargetPort();
@@ -101,10 +101,10 @@ void sendContentToTarget(asyncHTTPrequest* pRequest, WiFiClient wifiClient, Sett
   auth.replace("\n","");
 
   String postData = "{";
-  postData += getSendData(pSettings, macAddress, revolutions, viewPulsesPerMinute);
+  postData += getSendData(pSettings, macAddress, revolutions, bladesPerMinute);
   if (withInfo == true) {
     postData += ",";
-    postData += getSendInfo(pSettings, pWifiSettings, macAddress, revolutions, viewPulsesPerMinute);
+    postData += getSendInfo(pSettings, pWifiSettings, macAddress, revolutions, bladesPerMinute);
   }
   postData += "}";
 

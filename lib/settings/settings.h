@@ -6,17 +6,14 @@
 class Settings
 {
 public:
-  /* time between two sse pushes in ms */
-  const uint16_t SSE_RETRY = 1000;
-
   /* wait period in milliseconds */
   uint32_t WAIT_PERIOD = 200;
 
 private:
   /* 4 bytes to store, version of this firmware */
   uint8_t major = 0;    // max 2^8 = 256
-  uint8_t minor = 1;    // max 2^8 = 256
-  uint16_t patch = 10;  // max 2^16 = 65536
+  uint8_t minor = 2;    // max 2^8 = 256
+  uint16_t patch = 0;  // max 2^16 = 65536
 
   /* start as Access Point or as Network client */
   bool startAsAccessPoint = false;
@@ -44,6 +41,7 @@ private:
 
   /* target server, max size = 32 */
   String targetServer = "http://www.draaiendemolens.nl";
+
   /* factoryTargetServer */
   String factoryTargetServer = "http://www.draaiendemolens.nl";
 
@@ -57,10 +55,10 @@ private:
   /* factoryTargetPath server */
   String factoryTargetPath = "/feed/";
 
-  /* MAX_RATIO_ARGUMENT bytes to store, user-entered ratio as argument, example: "4-72.99.33-80.24" */
-  String ratioArgument = "4-4";
-  /* MAX_RATIO_ARGUMENT bytes to store, factory setting, user-entered ratio as argument, example: "4-72.99.33-80.24" */
-  String factoryRatioArgument = "4-4";
+  /* MAX_RATIO_ARGUMENT bytes to store, value comes from the server, example: "4-72.99.33-80.24" */
+  String ratioArgument = "1-1";
+  /* MAX_RATIO_ARGUMENT bytes to store, factory setting,value comes from the server, example: "4-72.99.33-80.24" */
+  String factoryRatioArgument = "1-1";
 
   /* Maximum size of EEPROM, SPI_FLASH_SEC_SIZE comes from spi_flash.h */
   const uint16_t MAX_EEPROM_SIZE = SPI_FLASH_SEC_SIZE;
@@ -126,7 +124,6 @@ public:
                         33 +                  // max size targetServer + 1
                         sizeof(this->targetPort) + 
                         17 +                  // max size of targetPath + 1
-                        sizeof(this->rawCounter) + 
                         65 +                 // MAX_RATIO_ARGUMENT + 1
                         37;                  // MAX_DEVICEKEY + 1
 
@@ -195,8 +192,14 @@ public:
   /* get Settings from EEPROM */
   uint16_t getSettings();
 
-  /* saves only Changed Configuration Settings in EEPROM starting on EEPROM-address (default = 0), returns length of saved bytes */
-  uint16_t saveConfigurationSettings();
+  /* saves targetServer in EEPROM  */
+  uint16_t saveTargetServerStuff();
+
+  /* saves RatioArgument in EEPROM  */
+  uint16_t saveRatioArgument();
+
+  /* saves DeviceKey in EEPROM */
+  uint16_t saveDeviceKey();
 
   /* return deviceKey */
   String getDeviceKey();

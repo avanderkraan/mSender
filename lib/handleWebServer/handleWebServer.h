@@ -4,29 +4,14 @@
 #include "settings.h"
 #include "WiFiSettings.h"
 
-/* show page to see the counter */
-void countPage(ESP8266WebServer &server, Settings * pSettings);
-void countPage_nl(ESP8266WebServer &server, Settings * pSettings);
-/* get and handle arguments on the settings-page */
-void arguments(ESP8266WebServer &server, Settings * pSettings);
-void arguments_nl(ESP8266WebServer &server, Settings * pSettings);
 /* show the help page */
 void help(ESP8266WebServer &server, Settings * pSettings);
 void help_nl(ESP8266WebServer &server, Settings * pSettings);
-/* show WiFi mode */
-void showWiFiMode(ESP8266WebServer &server, Settings * pSettings);
-void showWiFiMode_nl(ESP8266WebServer &server, Settings * pSettings);
-/* show saved setting values from EEPROM */
-void showSavedSettings(ESP8266WebServer &server, Settings * pSettings);
-void showSavedSettings_nl(ESP8266WebServer &server, Settings * pSettings);
-/* choose settings for the device and the target server */
-void device(ESP8266WebServer &server, Settings * pSettings);
-void device_nl(ESP8266WebServer &server, Settings * pSettings);
+/* show info mode */
+void info(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWifiSettings);
+void info_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWifiSettings);
 /* choose wifi connection, (Access Point or Station -todo: get SSID for Station-) */
 void wifi(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWifiSettings);
 void wifi_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWifiSettings);
-/* sending data through sse */
-// not language dependent
-void sse(ESP8266WebServer &server, Settings * pSettings, uint32_t revolutions, uint32_t viewPulsesPerMinute);
 
 #endif

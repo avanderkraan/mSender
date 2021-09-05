@@ -44,7 +44,7 @@ bool permissionToDetect = false;    // all sensors must have had a positive valu
 uint32_t startPulse = millis();     // set the offset time for a passing a pulse
 uint32_t pulsesPerMinute = 0;       // holds the value of pulses per minute
 uint32_t revolutions = 0;           // holds the value of revolutions of the first axis, calculated with ratio
-uint32_t viewPulsesPerMinute = 0;   // holds the value of ends per minute calculated with ratio
+uint32_t bladesPerMinute = 0;   // holds the value of ends per minute calculated with ratio
 uint32_t pulseLedOnTime = millis(); // holds the last time a pulse was detected, used as flag for the pulse_led
 
 Settings settings = Settings();
@@ -76,9 +76,8 @@ bool detectInfoRequest = false;
 
 // Forward declaration
 void setupWiFi();
-void showSettings();
+void handleInfo();
 void switchToAccessPoint();
-void handleShowWiFiMode();
 void initServer();
 void sendExample();
 
@@ -104,24 +103,24 @@ WiFiClient wifiClient;
 // start Settings and EEPROM stuff
 void saveSettings() {
   pSettings->saveSettings();
-  showSettings();
+  handleInfo();
 }
 
 void getSettings() {
   pSettings->getSettings();
-  showSettings();
+  handleInfo();
 }
 
 void eraseSettings() {
   pSettings->eraseSettings();
   pSettings->getSettings();   // otherwise the previous values of Settings are used
-  showSettings();
+  handleInfo();
 }
 
 void initSettings() {
   pSettings->initSettings();
   pSettings->getSettings();   // otherwise the previous values of Settings are used
-  showSettings();
+  handleInfo();
 }
 // end Settings and EEPROM stuff
 
@@ -135,10 +134,12 @@ void setupWiFi(){
   String myssid = pWifiSettings->readAccessPointSSID();
   String mypass = pWifiSettings->readAccessPointPassword();
 
+
   if (myssid == "")
   {
     myssid = "ESP-" + WiFi.macAddress();
     pWifiSettings->setAccessPointSSID(myssid);
+    pWifiSettings->saveAuthorizationAccessPoint();
   }
 
   IPAddress local_IP(192,168,4,1);
@@ -205,6 +206,8 @@ void setupWiFiManager () {
       digitalWrite(ACCESSPOINT_LED, LOW);
       digitalWrite(STATION_LED, HIGH);
       pSettings->beginAsAccessPoint(false);  //not saved in EEPROM
+
+      detectInfoRequest = true;  // info includes the correct ratio from the server
     }
   }
   if (networkConnected == false) {
@@ -238,8 +241,7 @@ void resetWiFiManagerToFactoryDefaults () {
 void switchToAccessPoint() {
   echoInterruptOff();  // to prevent error with Delay
 
-  pSettings->beginAsAccessPoint(!  pSettings->beginAsAccessPoint());  // toggle
-  handleShowWiFiMode();
+  //pSettings->beginAsAccessPoint(!  pSettings->beginAsAccessPoint());  // toggle
   delay(pSettings->WAIT_PERIOD);
 
   server.close();
@@ -261,7 +263,6 @@ void switchToAccessPoint() {
 void switchToNetwork() {
   echoInterruptOff();  // to prevent error with Delay
 
-  handleShowWiFiMode();
   delay(pSettings->WAIT_PERIOD);
 
   server.close();
@@ -294,7 +295,7 @@ void checkGlobalPulseInLoop() {
     elapsedTime = millis() - startPulse;
     if (elapsedTime * pSettings->ratio > TOO_LONG) {
       pulsesPerMinute  = 0;
-      viewPulsesPerMinute = 0;
+      bladesPerMinute = 0;
     }   
   }
 }
@@ -390,10 +391,18 @@ void ICACHE_RAM_ATTR detectPulse() {  // ICACHE_RAM_ATTR is voor interrupts
       pSettings->blades = 1;
     }
 
-    viewPulsesPerMinute = round(pulsesPerMinute / pSettings->pulseFactor);
+    bladesPerMinute = round(pulsesPerMinute / pSettings->pulseFactor);
 
     // revolutions depend on the number of blades
     revolutions = floor(pSettings->getCounter() / (pSettings->pulseFactor * pSettings->blades));
+
+    // the ratioArgument should be changed with a server given value
+    // and therefore not be the same as the ratioFactoryArgumnent
+    if (pSettings->getRatioArgument() == pSettings->getFactoryRatioArgument())
+    { // NOT the correct ratio
+      bladesPerMinute = 0;
+      revolutions = 0;
+    }
   }
   echoInterruptOn();
 }
@@ -409,29 +418,6 @@ void echoInterruptOff() {
   detachInterrupt(IR_RECEIVE_2);
 }
 
-void handleCountPage() {
-  if (pSettings->getLanguage() == "NL")
-  {
-    countPage_nl(server, pSettings);
-  }
-  else
-  {
-    countPage(server, pSettings);
-  }
-}
-
-void handleShowWiFiMode()
-{
-  if (pSettings->getLanguage() == "NL")
-  {
-    showWiFiMode_nl(server, pSettings);
-  }
-  else
-  {
-    showWiFiMode(server, pSettings);
-  }
-}
-
 void handleWiFi() {
   if (pSettings->getLanguage() == "NL")
   {
@@ -443,104 +429,19 @@ void handleWiFi() {
   }
 }
 
-void handleDevice() {
-  if (pSettings->getLanguage() == "NL")
-  {
-    device_nl(server, pSettings);
-  }
-  else
-  {
-    device(server, pSettings);
-  }
-}
-
-void handleSse() {
-  sse(server, pSettings, revolutions, viewPulsesPerMinute);
-}
-
-void handleArguments() {
-  if (pSettings->getLanguage() == "NL")
-  {
-    arguments_nl(server, pSettings);
-  }
-  else
-  {
-    arguments(server, pSettings);
-  }
-  showSettings();
-}
-
-void myinfo() {
-  String starthtml = "<!DOCTYPE HTML>\r\n<html>\r\n";
-  starthtml += "<head>\r\n";
-  starthtml += "<meta charset=\"utf-8\">\r\n";
-  starthtml += "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\r\n";
-  starthtml += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\r\n";
-  starthtml += "<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->\r\n";
-  starthtml += "<link rel='icon' type='image/png' href='data:image/png;base64,iVBORw0KGgo='>\r\n";
-  starthtml += "<title>info</title>\r\n";
-  starthtml += "</head>\r\n";
-  starthtml += "<body>\r\n";
-  String endhtml = "</body>\r\n";
-  endhtml += "</html>\r\n";
-
-  String result = starthtml;
-  String result_nl = starthtml;
-  String myIP = "";
-  if (WiFi.getMode() == WIFI_AP)
-  {
-    myIP = WiFi.softAPIP().toString();
-    result += "\r\n\r\n<br><br>IP address: ";
-    result_nl += "\r\n\r\n<br><br>IP address: ";
-  }
+void handleInfo() {
   if (WiFi.getMode() == WIFI_STA)
   {
-    myIP = WiFi.localIP().toString();
     detectInfoRequest = true;
-    result += "Information about this Counter-settings (but no passwords!) has been sent to ";
-    result_nl += "Informatie over deze Teller-instellingen (maar geen wachtwoorden!) is opgestuurd naar ";
-    result += pSettings->getTargetServer();     
-    result_nl += pSettings->getTargetServer();
-    
-    result += "\r\n\r\n<br><br>(Not sent) IP address: ";
-    result_nl += "\r\n\r\n<br><br>(Niet opgestuurd) IP address: ";
   }
-
-  result += myIP;
-  result += "\r\n";
-  result_nl += myIP;
-  result_nl += "\r\n<br><br>";
-
-  result += "\r\n<br>Firmware version: ";
-  result += pSettings->getFirmwareVersion();
-  result_nl += "\r\n<br>Firmware version: ";
-  result_nl += pSettings->getFirmwareVersion();
-
-  result += "\r\n<br>Ratio: ";
-  result += pSettings->getRatioArgument();
-  result_nl += "\r\n<br>Ratio: ";
-  result_nl += pSettings->getRatioArgument();
-
-  result += "\r\n<br>Access Point SSID: ";
-  result += pWifiSettings->readAccessPointSSID();
-  result_nl += "\r\n<br>Access Point SSID: ";
-  result_nl += pWifiSettings->readAccessPointSSID();
-
-  result += "\r\n<br>Network SSID: ";
-  result += pWifiSettings->readNetworkSSID();
-  result_nl += "\r\n<br>Network SSID: ";
-  result_nl += pWifiSettings->readNetworkSSID();
-
-  result += "<br>\r\n";
-  result += "<br>\r\n";
-  result += "<a href='/help/'>Go to the home/help page</a>\r\n";
-  result_nl += "<br>\r\n";
-  result_nl += "<br>\r\n";
-  result_nl += "<a href='/help/'>Ga naar de begin/help pagina</a>\r\n";
-
-
-  result += endhtml;
-  result_nl += endhtml;
+  if (pSettings->getLanguage() == "NL")
+  {
+    info_nl(server, pSettings, pWifiSettings);
+  }
+  else
+  {
+    info(server, pSettings, pWifiSettings);
+  }
 
   Serial.print("readAccessPointSSID: ");
   Serial.println(pWifiSettings->readAccessPointSSID());
@@ -576,17 +477,6 @@ void myinfo() {
 
   Serial.print("MAC address: ");
   Serial.println(WiFi.macAddress());
-
-  server.sendHeader("Connection", "keep-alive");
-  server.sendHeader("Pragma", "no-cache");
-  if (pSettings->getLanguage() == "NL")
-  {
-    server.send(200, "text/html", result_nl);
-  }
-  else
- {
-    server.send(200, "text/html", result);    
-  }
 }
 
 String updateFirmware(String requestedVersion)
@@ -730,15 +620,32 @@ void handleRestart() {
   }
 }
 
-void showSettings() {
-  if (pSettings->getLanguage() == "NL")
-  {
-    showSavedSettings_nl(server, pSettings);
+void handleConnect() {
+  uint8_t argumentCounter = 0;
+
+  argumentCounter = server.args();
+  if (argumentCounter < 4) {  // prevent to many arguments
+    String targetServer = pSettings->getFactoryTargetServer();
+    String targetPort = String(pSettings->getFactoryTargetPort());
+    String targetPath = pSettings->getFactoryTargetPath();
+    for (uint8_t i=0; i< server.args(); i++){
+      if (server.argName(i) == "server") {
+        targetServer = server.arg(i);
+      }
+      if (server.argName(i) == "port") {
+        targetPort = server.arg(i);
+      }
+      if (server.argName(i) == "path") {
+        targetPath = server.arg(i);
+      }
+    }
+
+    pSettings->setTargetServer(targetServer);
+    pSettings->setTargetPort(targetPort);
+    pSettings->setTargetPath(targetPath);
+    pSettings->saveTargetServerStuff();
   }
-  else
-  {
-    showSavedSettings(server, pSettings);
-  }
+  handleInfo();
 }
 
 void handleHelp() {
@@ -898,91 +805,6 @@ void handleWifiConnect() {
   Serial.println(result);
 }
 
-void handleDeviceSettings()
-{
-  uint8_t argumentCounter = 0;
-  String result = "";
-  String result_nl = "";
-
-  if (server.method() == HTTP_POST)
-  {
-    // extract the settings-data and take action
-    argumentCounter = server.args();  // if argumentCounter > 0 then saveConfigurationSettings
-    String _name = "";
-    //String _startWiFiMode = "";
-    String _counter = "0";   // set to 0 as from version 0.1.5
-    String _ratio = "";
-    String _targetServer = "";
-    String _targetPort = "";
-    String _targetPath = "";
-
-    for (uint8_t i=0; i< server.args(); i++){
-      if (server.argName(i) == "name") {
-        _name = server.arg(i);
-      }
-      // deprecated as of versio 0.1.8
-      //if (server.argName(i) == "startWiFiMode") {
-      //  _startWiFiMode = server.arg(i);
-      //}
-      // deprecated as from version 0.1.5
-      //if (server.argName(i) == "counter") {
-      //  _counter = server.arg(i);
-      //}
-      if (server.argName(i) == "ratio") {
-        _ratio = server.arg(i);
-      }
-      if (server.argName(i) == "targetServer") {
-        _targetServer = server.arg(i);
-      }
-      if (server.argName(i) == "targetPort") {
-        _targetPort = server.arg(i);
-      }
-      if (server.argName(i) == "targetPath") {
-        _targetPath = server.arg(i);
-      }
-    }
-    // check name (is device, targetServer or targetserverData and then the corresponding parameters)
-    // check name (is device or targetServer and then the corresponding parameters)
-    if (_name == "device")
-    {
-      /*
-      if (_startWiFiMode == "ap") {
-        pSettings->beginAsAccessPoint(true);
-      }
-      if (_startWiFiMode == "network") {
-        pSettings->beginAsAccessPoint(false);
-      }
-      */
-      pSettings->setCounter(_counter);
-      if (_ratio != "")
-      {
-        pSettings->setRatioArgument(_ratio);
-      }
-    }
-    if (_name == "targetServer")
-    {
-      pSettings->setTargetServer(_targetServer);
-      pSettings->setTargetPort(_targetPort);
-      pSettings->setTargetPath(_targetPath);
-    }
-    if (argumentCounter > 0) {
-      pSettings->saveConfigurationSettings();
-      result += "Device data has been saved\n";
-      result_nl += "Apparaatgegevens zijn opgeslagen\n";
-
-    }
-  }
-  if (pSettings->getLanguage() == "NL")
-  {
-    server.send(200, "text/plain", result_nl);
-  }
-  else
-  {
-    server.send(200, "text/plain", result);
-  }
-  Serial.println(result);
-}
-
 String getValueFromJSON(String key, String responseData)
 {
   int16_t keyIndex = responseData.indexOf(key);
@@ -1007,7 +829,7 @@ void processServerData(String responseData)
   if ((proposedUUID != "") && (pSettings->getDeviceKey() != proposedUUID))
   {
     pSettings->setDeviceKey(proposedUUID);
-    pSettings->saveConfigurationSettings(); // save to EEPROM
+    pSettings->saveDeviceKey(); // save to EEPROM
   }
 
   String proposedRatio = getValueFromJSON("pR", responseData);
@@ -1041,7 +863,7 @@ void processServerData(String responseData)
   if ((ratioOK) && (proposedRatio != "") && (pSettings->getRatioArgument() != proposedRatio))
   {
     pSettings->setRatioArgument(proposedRatio);
-    pSettings->saveConfigurationSettings(); // save to EEPROM
+    pSettings->saveRatioArgument(); // save to EEPROM
   }
 
   String pushFirmwareVersion = getValueFromJSON("pFv", responseData);
@@ -1116,30 +938,31 @@ void initServer()
   server.onNotFound(handleHelp);
 
   // interactive pages
-  server.on("/device/", handleDevice);
   server.on("/wifi/", handleWiFi);
   // handles input from interactive pages
   server.on("/networkssid/", handleNetworkSSID);
   server.on("/wifiConnect/", handleWifiConnect);
-  server.on("/deviceSettings/", handleDeviceSettings);
   server.on("/language/", handleLanguage);
   server.on("/update/", handleVersion);
   server.on("/restart/", handleRestart);
-  server.on("/data.sse/", handleSse);         // sse for handleCountPage on local server
 
   // url-commands, not used in normal circumstances
-  server.on("/count/", handleCountPage);
   server.on("/ap/", switchToAccessPoint);
   server.on("/network/", switchToNetwork);
-  server.on("/settings/", handleArguments);
   server.on("/eraseSettings/", eraseSettings);
   server.on("/initSettings/", initSettings);
   server.on("/getSettings/", getSettings);
   server.on("/saveSettings/", saveSettings);
   server.on("/reset/", resetWiFiManagerToFactoryDefaults);
 
+  // for selecting a target server when developing
+  // arguments: server, port, path, default are the factorySettings
+  // /connect/ without arguments connects to the production server, 
+  //           port and path
+  server.on("/connect/", handleConnect);
+
   // handles info
-  server.on("/info/", myinfo);
+  server.on("/info/", handleInfo);
 
   server.begin();
   Serial.println("HTTP server started");
@@ -1222,7 +1045,7 @@ void loop()
     if (millis() - lastSendMillis > pSettings->getSEND_PERIOD())
     {
       if ((aRequest.readyState() == 0) || (aRequest.readyState() == 4)) {
-        sendContentToTarget(&aRequest, wifiClient, pSettings, pWifiSettings, String(WiFi.macAddress()), revolutions, viewPulsesPerMinute, detectInfoRequest);
+        sendContentToTarget(&aRequest, wifiClient, pSettings, pWifiSettings, String(WiFi.macAddress()), revolutions, bladesPerMinute, detectInfoRequest);
         detectInfoRequest = false;    // reset value so no info will be sent again
       }
       lastSendMillis = millis();

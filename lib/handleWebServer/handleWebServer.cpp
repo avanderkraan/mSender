@@ -1,62 +1,70 @@
 #include "handleWebServer.h"
 
-void countPage(ESP8266WebServer &server, Settings * pSettings)
-{
-  String result = "<!DOCTYPE HTML>\r\n<html>\r\n";
-  result += "<head>\r\n";
-  result += "<meta charset=\"utf-8\">\r\n";
-  result += "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\r\n";
-  result += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\r\n";
-  result += "<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->\r\n";
-  result += "<link rel='icon' type='image/png' href='data:image/png;base64,iVBORw0KGgo='>\r\n";
-  result += "<title>mill</title>\r\n";
-  result += "</head>\r\n";
-  result += "<body>\r\n";
-  result += "Counter of the sensor: \r\n";
-  result += "<span id='rawCounter'>-</span>\r\n";
-  result += "<br>\r\n";
-  result += "<br>\r\n";
-  result += "<!-- ratio is 1:\r\n";
-  result += "<span id='ratio'>-</span>\r\n";
-  result += "<br>\r\n";
-  result += "<br>-->\r\n";
-  result += "Counter for the number of revolutions of the blades: \r\n";
-  result += "<h2><span id='revolutions'>-</span></h2>\r\n";
-  result += "<br>\r\n";
-  result += "Number of blades per minute: \r\n";
-  result += "<h2><span id='viewPulsesPerMinute'>-</span></h2>\r\n";
-  result += "<br>\r\n";
-  result += "<div id='message'></div>\r\n";
+void info(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWifiSettings) {
+  String starthtml = "<!DOCTYPE HTML>\r\n<html>\r\n";
+  starthtml += "<head>\r\n";
+  starthtml += "<meta charset=\"utf-8\">\r\n";
+  starthtml += "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\r\n";
+  starthtml += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\r\n";
+  starthtml += "<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->\r\n";
+  starthtml += "<link rel='icon' type='image/png' href='data:image/png;base64,iVBORw0KGgo='>\r\n";
+  starthtml += "<title>info</title>\r\n";
+  starthtml += "</head>\r\n";
+  starthtml += "<body>\r\n";
+  String endhtml = "</body>\r\n";
+  endhtml += "</html>\r\n";
+
+  String result = starthtml;
+  String myIP = "";
+  if (WiFi.getMode() == WIFI_AP)
+  {
+    myIP = WiFi.softAPIP().toString();
+  }
+  if (WiFi.getMode() == WIFI_STA)
+  {
+    myIP = WiFi.localIP().toString();
+
+    result += "Passwords and IP addresses are not sent to the server<br>\r\n";
+    result += "Part of the information you see below has been sent to ";
+    result += pSettings->getTargetServer();
+  }
+
+  result += "\r\n\r\n<br><br>IP adres: ";
+  result += myIP;
+  result += "\r\n<br><br>";
+
+  result += "\r\n<br>Firmware version: ";
+  result += pSettings->getFirmwareVersion();
+
+  result += "\r\n<br>Ratio: ";
+  result += pSettings->getRatioArgument();
+
+  result += "\r\n<br>Access Point SSID: ";
+  result += pWifiSettings->readAccessPointSSID();
+
+  result += "\r\n<br>Network SSID: ";
+  result += pWifiSettings->readNetworkSSID();
+
+  result += "\r\n<br>Server name: ";
+  result += pSettings->getTargetServer();
+
+  result += "\r\n<br>Server port: ";
+  result += String(pSettings->getTargetPort());
+
+  result += "\r\n<br>Server path: ";
+  result += pSettings->getTargetPath();
+
   result += "<br>\r\n";
   result += "<br>\r\n";
   result += "<a href='/help/'>Go to the home/help page</a>\r\n";
-  result += "<script>\r\n";
-  result += "if(typeof(EventSource) !== 'undefined') {\r\n";
-  //result += "    document.getElementById('result').innerHTML = 'sse event is supported'\r\n";
-  result += "    var source = new EventSource('/data.sse/');\r\n";
-  result += "    source.onmessage = function (e) {\r\n";
-  result += "        try {\r\n";
-  result += "            result = JSON.parse(e.data);\r\n";
-  result += "            document.getElementById('revolutions').innerHTML = result.revolutions;\r\n";
-  result += "            document.getElementById('rawCounter').innerHTML = result.rawCounter;\r\n";
-  result += "            document.getElementById('viewPulsesPerMinute').innerHTML = result.viewPulsesPerMinute;\r\n";
-  result += "            //document.getElementById('ratio').innerHTML = result.ratio;\r\n";
-  result += "        }\r\n";
-  result += "        catch (err) {\r\n";
-  result += "            console.log('Error: ' + err)\r\n";
-  result += "        }\r\n";
-  result += "    }\r\n";
-  result += "} else {\r\n";
-  result += "    document.getElementById('message').innerHTML = 'Your browser has no Server-Sent Event support, please refresh manually'\r\n";
-  result += "}\r\n";
-  result += "</script>\r\n";
-  result += "\r\n</body>\r\n</html>\r\n";
 
-  //server.sendHeader("Content-Type", "text/html");
+  result += endhtml;
+
   server.sendHeader("Cache-Control", "no-cache");
   server.sendHeader("Connection", "keep-alive");
   server.sendHeader("Pragma", "no-cache");
   server.send(200, "text/html", result);
+  server.send(200, "text/html", result);    
 }
 
 void showWiFiMode(ESP8266WebServer &server, Settings * pSettings)
@@ -97,6 +105,10 @@ void help(ESP8266WebServer &server, Settings * pSettings)
   result += "<input id=\"EN\" type=\"button\" onclick=\"selectLanguage(this)\" value=\"English\">\r\n";
   result += "<input id=\"NL\" type=\"button\" onclick=\"selectLanguage(this)\" value=\"Nederlands\">\r\n";
   result += "<br><br>\r\n";
+  result += "WiFi mode can be changed using the small button on the Counter<br\r\n";
+  result += "Both leds will go on and after a while one will stay on: green is Station, yellow is Access Point\r\n";
+  result += "<br>\r\n";
+
   result += "WiFi mode: ";
   if (pSettings->beginAsAccessPoint() == true)
   {
@@ -131,9 +143,9 @@ void help(ESP8266WebServer &server, Settings * pSettings)
   result += "<br><br><br>\r\n";
   result += "<a href='/help/'>Help</a> help/home screen\r\n";
   result += "<br><br>\r\n";
-  result += "<a href='/device/'>Counter settings</a> ratio, Server settings\r\n";
-  result += "<br><br>\r\n";
   result += "<a href='/wifi/'>WiFi</a> settings to connect the Counter to WiFi\r\n";
+  result += "<br><br>\r\n";
+  result += "<a href='/info/'>Information</a> shown on screen and partial sent to the server. Passwords and IP addresses are not sent<br>\r\n";
   result += "<br><br>\r\n";
   result += "<script>\r\n";
   result += "  function restart() {\r\n";
@@ -207,427 +219,6 @@ void help(ESP8266WebServer &server, Settings * pSettings)
   result += "</script>\r\n";
 
   result += "\r\n</body>\r\n</html>\r\n";
-  server.sendHeader("Cache-Control", "no-cache");
-  server.sendHeader("Connection", "keep-alive");
-  server.sendHeader("Pragma", "no-cache");
-  server.send(200, "text/html", result);
-}
-
-
-void showSavedSettings(ESP8266WebServer &server, Settings * pSettings)
-{
-  String result = "<!DOCTYPE HTML>\r\n<html>\r\n";
-  result += "<head>\r\n";
-  result += "<meta charset=\"utf-8\">\r\n";
-  result += "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\r\n";
-  result += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\r\n";
-  result += "<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->\r\n";
-  result += "<link rel='icon' type='image/png' href='data:image/png;base64,iVBORw0KGgo='>\r\n";
-  result += "<title>mill</title>\r\n";
-  result += "</head>\r\n";
-  result += "<body>\r\n";
-  result += "Settings\r\n";
-  result += "<br><br>\r\n";
-  result += "opgeslagen tellerstand: \r\n";
-  result += String(pSettings->getCounter());
-  result += "\r\n";
-  result += "<br>\r\n";
-  result += "opgeslagen opgegeven ratio: \r\n";
-  result += pSettings->getRatioArgument();
-  result += "\r\n";
-  result += "<br>\r\n";
-  result += "opgeslagen berekende ratio: \r\n";
-  result += String(pSettings->ratio);
-  result += "\r\n";
-  result += "<br>\r\n";
-  result += "opgeslagen deviceKey: \r\n";
-  result += pSettings->getDeviceKey();
-  result += "\r\n";
-  result += "<br>\r\n";
-  result += "opgeslagen berekende pulse factor: \r\n";
-  result += String(pSettings->pulseFactor);
-  result += "\r\n";
-  result += "<br>\r\n";
-  result += "<br>\r\n";
-  result += "<a href='/help/'>Go to the home/help page</a>\r\n";
-  result += "</body>\r\n";
-  result += "</html>\r\n";
-  server.sendHeader("Cache-Control", "no-cache");
-  server.sendHeader("Connection", "keep-alive");
-  server.sendHeader("Pragma", "no-cache");
-  server.send(200, "text/html", result);
-}
-
-void arguments(ESP8266WebServer &server, Settings * pSettings)
-{
-  // Prepare the response. Start with the common header:
-  //uint8_t foundArgument = 0;
-  String message = "";
-  for (uint8_t i=0; i< server.args(); i++){
-    if (String( server.argName(i)) == "rawCounter") {
-      pSettings->setCounter(server.arg(i));
-    }
-    if (String( server.argName(i)) == "ratio") {
-      uint8_t delimiterCount = 0;
-      
-      if (server.argName(i).length() > pSettings->getMAX_RATIO_ARGUMENT()) {
-        message += "ratio argument is too long, maximum size is: ";
-        message += String(pSettings->getMAX_RATIO_ARGUMENT());
-      
-      }
-      else {
-        for (uint8 c = 0; c <  server.arg(i).length(); c++ ) {
-          if ( server.arg(i)[c] == pSettings->getAXES_DELIMITER()) {
-            delimiterCount += 1;
-          }
-        }
-        if ((delimiterCount > pSettings->getMAX_AXES()) || (delimiterCount > pSettings->getMAX_WHEELS())) {
-          message += "ratio argument is invalid, must be: bladeCount-gearTeeth.gearTeeth-gearTeeth ... Set value to 1";
-          pSettings->setRatioArgument(pSettings->getFactoryRatioArgument());
-          pSettings->ratio = 1.0;
-          pSettings->pulseFactor = 1.0;
-        }
-        else {
-          pSettings->setRatioArgument(server.arg(i));
-          pSettings->calculateRatio( server.arg(i));  // where settings.ratio is set
-          pSettings->calculatePulseFactor ( server.arg(i));  // where settings.pulseFactor is set
-        }
-        pSettings->saveSettings();
-      }     
-    }
-  }
-}
-
-void device(ESP8266WebServer &server, Settings * pSettings)
-{
-  String result = "<!DOCTYPE HTML><html>\r\n";
-  result += "<head>\r\n";
-  result += "<meta charset=\"utf-8\">\r\n";
-  result += "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\r\n";
-  result += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\r\n";
-  result += "<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->\r\n";
-  result += "<link rel='icon' type='image/png' href='data:image/png;base64,iVBORw0KGgo='>\r\n";
-  result += "<title>mill</title>\r\n";
-  result += "</head>\r\n";
-  result += "<body>\r\n";
-  result += "Settings for the Counter\r\n";
-  result += "<br><br>\r\n";
-  result += "<input type=\"radio\" name=\"settings\" onclick=\"displaySettings()\" value=\"device\" checked>Device\r\n";
-  result += "<br>\r\n";
-  //result += "<input type=\"radio\" name=\"settings\" onclick=\"displaySettings()\" value=\"targetServerData\">Target server data\r\n";
-  //result += "<br>\r\n";
-  result += "<input type=\"radio\" name=\"settings\" onclick=\"displaySettings()\" value=\"targetServer\">Target server\r\n";
-  result += "<br>\r\n";
-  result += "<br>\r\n";
-  result += "<div id=\"device\">\r\n";
-  /*
-  result += "    <br>\r\n";
-  result += "    Set the WiFi start Mode <input id=\"startWiFiMode\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  result += pSettings->getFactoryStartModeWiFi();
-  result += "\" value=\"reset\">\r\n";
-  result += "    <br>\r\n";
-  result += "    <input type=\"radio\" name=\"startWiFiMode\" value=\"ap\" ";
-  result += (pSettings->beginAsAccessPoint() == true)?"checked":"";
-  result += "> start as Access Point\r\n";
-  result += "    <br>\r\n";
-  result += "    <input type=\"radio\" name=\"startWiFiMode\" value=\"network\" ";
-  result += (pSettings->beginAsAccessPoint() == true)?"":"checked";
-  result += "> start as Network Station\r\n";
-  result += "    <br><br>\r\n";
-  */
-  //result += "  Counter: <input type=\"text\" name=\"counter\" min=\"0\" max=\"4294967296\" maxlength=\"10\" size=\"12\" placeholder=\"";
-  //result += String(pSettings->getCounter());
-  //result += "\" title=\"This shows the current count, you may reset is to another value (0 - 4294967296)\" value=\"\" factorySetting=\"124\" onkeyup=\"checkNumber(this, 'counterMessage', 'Invalid counter (0 - 4294967296)');\">\r\n";
-  //result += "    <input id=\"counter\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  //result += String(pSettings->getFactoryCounter());
-  //result += "\" value=\"reset\">\r\n";
-  //result += "    <span id=\"counterMessage\"></span><br><br>\r\n";
-  //result += "  <br>\r\n";
-  result += "  Ratio: <input type=\"text\" name=\"ratio\" maxlength=\"64\" size=\"40\" placeholder=\"4-72.33-80.24\" title=\"4-72.33-80\" value=\"";
-  result += pSettings->getRatioArgument();
-  result += "\" onkeyup=\"checkRatio(this, 'ratioMessage', 'Invalid ratio character or combination (-. -- .. .-)');\">\r\n";
-  result += "    <input id=\"ratio\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  result += pSettings->getFactoryRatioArgument();
-  result += "\" value=\"reset\">\r\n";
-  result += "  <span id=\"ratioMessage\"></span><br><br>\r\n";
-  result += "  After 'Save' wait for confirmation.\r\n";
-  result += "  <br>\r\n";
-  result += "  <input id=\"deviceButton\" type=\"button\" name=\"deviceButton\" value=\"Save\" onclick=\"saveDevice(this)\">\r\n";
-  result += "  <input type=\"button\" name=\"deviceCancelButton\" value=\"Cancel\" onclick=\"cancelSettings()\">\r\n";
-  result += "</div>\r\n";
-  result += "\r\n";
-  result += "<div id=\"targetServer\">\r\n";
-  result += "    <br>\r\n";
-  result += "    Target server\r\n";
-  result += "    <br>\r\n";
-  result += "  Domain name: <input type=\"text\" name=\"targetServer\" maxlength=\"32\" size=\"33\" placeholder=\"protocol://domain name\" value=\"";
-  result += pSettings->getTargetServer();
-  result += "\"> Max 32 characters\r\n";
-  result += "    <input id=\"targetServer\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  result += pSettings->getFactoryTargetServer();
-  result += "\" value=\"reset\">\r\n";
-  result += "    <br>\r\n";
-  result += "    Port: <input type=\"text\" name=\"targetPort\" min=\"0\" max=\"65536\" maxlength=\"5\" size=\"6\" placeholder=\"port\" title=\"0 - 65536\" value=\"";
-  result += String(pSettings->getTargetPort());
-  result += "\"  onkeyup=\"checkNumber(this, 'portMessage', 'Invalid number (0 - 65536)');\">\r\n";
-  result += "    <input id=\"targetPort\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  result += String(pSettings->getFactoryTargetPort());
-  result += "\" value=\"reset\">\r\n";
-  result += "    <span id=\"portMessage\"></span>\r\n";
-  result += "    <br>\r\n";
-  result += "    Path: <input type=\"text\" name=\"targetPath\" maxlength=\"16\" size=\"17\" placeholder=\"path\" value=\"";
-  result += pSettings->getTargetPath();
-  result += "\"> Max 16 characters\r\n";
-  result += "    <input id=\"targetPath\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  result += pSettings->getFactoryTargetPath();
-  result += "\" value=\"reset\">\r\n";
-  result += "  <br><br>\r\n";
-  result += "  After 'Save' wait for confirmation.\r\n";
-  result += "    <br>\r\n";
-  result += "  <input id=\"targetServerButton\" type=\"button\" name=\"targetServerButton\" value=\"Save\" onclick=\"saveTargetServer(this)\">\r\n";
-  result += "  <input type=\"button\" name=\"targetServerCancelButton\" value=\"Cancel\" onclick=\"cancelSettings()\">\r\n";
-  result += "</div>\r\n";
-  result += "\r\n";
-  result += "<br>\r\n";
-  result += "<div id=\"sendMessage\"></div>\r\n";
-  result += "\r\n";
-  result += "<br>\r\n";
-  result += "<br>\r\n";
-  result += "<a href='/help/'>Go to the home/help page</a>\r\n";
-  result += "<script>\r\n";
-  result += "  function factorySetting(component) {\r\n";
-  result += "      var id = component.id || \"\";\r\n";
-  result += "      var factoryValue = component.getAttribute(\"reset\");\r\n";
-  result += "      var names = document.getElementsByName(id) || [];\r\n";
-  result += "      if (names.length > 0) {\r\n";
-  result += "        var type = names[0].getAttribute(\"type\");\r\n";
-  result += "        if (type == \"radio\")\r\n";
-  result += "        {\r\n";
-  result += "            for (var i = 0; i < names.length; i++)\r\n";
-  result += "            {\r\n";
-  result += "                if (names[i].value == factoryValue) {\r\n";
-  result += "                    names[i].checked = true;\r\n";
-  result += "                };\r\n";
-  result += "            }\r\n";
-  result += "        }\r\n";
-  result += "        if (type == \"checkbox\")\r\n";
-  result += "        {\r\n";
-  result += "            var factoryValueArray = factoryValue.split(\",\");\r\n";
-  result += "            for (var i = 0; i < names.length; i++)\r\n";
-  result += "            {\r\n";
-  result += "                names[i].checked = false;\r\n";
-  result += "                for (var e = 0; e < factoryValueArray.length; e++)\r\n";
-  result += "                {\r\n";
-  result += "                    if (names[i].value == factoryValueArray[e].trim()) {\r\n";
-  result += "                        names[i].checked = true;\r\n";
-  result += "                    }\r\n";
-  result += "                }\r\n";
-  result += "            }\r\n";
-  result += "        }\r\n";
-  result += "        if (type == \"text\")\r\n";
-  result += "        {\r\n";
-  result += "            names[0].value = factoryValue;\r\n";
-  result += "        }\r\n";
-  result += "      }\r\n";
-  result += "  }\r\n";
-  result += "\r\n";
-  result += "  function checkRatio(component, messageId, message) {\r\n";
-  result += "    var buttonId = component.parentNode.id + \"Button\";\r\n";
-  result += "    var validCharacterString = \"0123456789-.\";\r\n";
-  result += "    var valid = false;\r\n";
-  result += "      var currentChar = component.value.charAt(component.value.length - 1);\r\n";
-  result += "      if (validCharacterString.indexOf(currentChar) > -1) {\r\n";
-  result += "    valid = true;\r\n";
-  result += "    };\r\n";
-  result += "      if ( (component.value.indexOf(\".-\") > -1) ||\r\n";
-  result += "           (component.value.indexOf(\"--\") > -1) ||\r\n";
-  result += "           (component.value.indexOf(\"..\") > -1) ||\r\n";
-  result += "           (component.value.indexOf(\"-.\") > -1) ) {\r\n";
-  result += "          valid = false;\r\n";
-  result += "      }\r\n";
-  result += "    if (valid) {\r\n";
-  result += "      document.getElementById(messageId).innerHTML = \"\";\r\n";
-  result += "    }\r\n";
-  result += "    else {\r\n";
-  result += "    document.getElementById(messageId).innerHTML = message;\r\n";
-  result += "    }\r\n";
-  result += "    document.getElementById(buttonId).disabled = !valid;\r\n";
-  result += "    return valid;\r\n";
-  result += "  }\r\n";
-  result += "\r\n";
-  result += "  function checkNumber(component, messageId, message) {\r\n";
-  result += "    var buttonId = component.parentNode.id + \"Button\";\r\n";
-  result += "  //var validCharacterString = \"0123456789-.\";\r\n";
-  result += "  var valid = false;\r\n";
-  result += "    if ((component.value >= Number(component.getAttribute(\"min\"))) && (component.value <= Number(component.getAttribute(\"max\")))) {\r\n";
-  result += "        valid = true;\r\n";
-  result += "    }\r\n";
-  result += "    if (valid) {\r\n";
-  result += "      document.getElementById(messageId).innerHTML = \"\";\r\n";
-  result += "    }\r\n";
-  result += "    else {\r\n";
-  result += "    document.getElementById(messageId).innerHTML = message;\r\n";
-  result += "    }\r\n";
-  result += "    document.getElementById(buttonId).disabled = !valid;\r\n";
-  result += "    return valid;\r\n";
-  result += "  }\r\n";
-  result += "\r\n";
-  result += "  function cancelSettings() {\r\n";
-  result += "  window.location.reload();\r\n";
-  result += "  }\r\n";
-  result += "  function sendData(data) {\r\n";
-  result += "    var xhr = new XMLHttpRequest();   // new HttpRequest instance\r\n";
-  result += "    xhr.open(\"POST\", \"/deviceSettings/\");\r\n";
-  result += "    xhr.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");\r\n";
-  result += "    //xhr.setRequestHeader(\"Content-Type\", \"application/json\");\r\n";
-  result += "      document.getElementById(\"sendMessage\").innerHTML = \"Please wait\";\r\n";
-  result += "      xhr.onreadystatechange = function() { // Call a function when the state changes.\r\n";
-  result += "        var myResponseText = \"\";\r\n";
-  result += "        if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {\r\n";
-  result += "          myResponseText = this.responseText || \"\";\r\n";
-  result += "        }\r\n";
-  result += "        if (this.readyState === XMLHttpRequest.DONE && this.status !== 200) {\r\n";
-  result += "          myResponseText = this.statusText || \"\";\r\n";
-  result += "        }\r\n";
-  result += "        document.getElementById(\"sendMessage\").innerHTML = myResponseText;\r\n";
-  result += "      }\r\n";
-  //result += "    }\r\n";
-  result += "    xhr.send(data);\r\n";
-  result += "  }\r\n";
-  result += "\r\n";
-  result += "  function saveDevice(content) {\r\n";
-  result += "        var children = content.parentNode.childNodes;\r\n";
-  //result += "        var startWiFiMode = \"\";\r\n";
-  result += "        var counter = \"\";\r\n";
-  result += "        var ratio = \"\";\r\n";
-  result += "        for (var i = 0; i < children.length; i++) {\r\n";
-  result += "            if (children[i].name == \"startWiFiMode\") {\r\n";
-  result += "                if (children[i].checked == true) {\r\n";
-  result += "                    startWiFiMode = children[i].value || true;\r\n";
-  result += "                }\r\n";
-  result += "            }\r\n";
-  //result += "            if (children[i].name == \"counter\") {\r\n";
-  //result += "                counter = children[i].value || \"\";\r\n";
-  //result += "            }\r\n";
-  result += "            if (children[i].name == \"ratio\") {\r\n";
-  result += "                ratio = children[i].value || \"\";\r\n";
-  result += "            }\r\n";
-  result += "        }\r\n";
-  //result += "        var params = \"name=device\" + \"&startWiFiMode=\" + startWiFiMode + \"&counter=\" + counter + \"&ratio=\" + ratio;\r\n";
-  //result += "        var params = \"name=device\" + \"&startWiFiMode=\" + startWiFiMode + \"&ratio=\" + ratio;\r\n";
-  result += "        var params = \"name=device\" + \"&ratio=\" + ratio;\r\n";
-  result += "        sendData(params);\r\n";
-  result += "  }\r\n";
-  result += "\r\n";
-  /*    still available in settings
-  result += "  function saveTargetServerData(content) {\r\n";
-  result += "        var children = content.parentNode.childNodes;\r\n";
-  result += "        var allowSendingData = \"\";\r\n";
-  result += "        var isOpen = \"\";\r\n";
-  result += "        var showData = \"\";\r\n";
-  result += "        var message = \"\";\r\n";
-  result += "        for (var i = 0; i < children.length; i++) {\r\n";
-  result += "            if (children[i].name == \"allowSendToTarget\") {\r\n";
-  result += "                allowSendingData = children[i].checked == true;\r\n";
-  result += "            }\r\n";
-  result += "        }\r\n";
-  result += "        children = document.getElementById(\"allowed\").childNodes;\r\n";
-  result += "        for (var i = 0; i < children.length; i++) {\r\n";
-  result += "            if (children[i].name == \"entree\") {\r\n";
-  result += "                if (children[i].checked == true) {\r\n";
-  result += "                    isOpen = children[i].value || \"\";\r\n";
-  result += "                }\r\n";
-  result += "            }\r\n";
-  result += "            if (children[i].name == \"showDataOnTarget\") {\r\n";
-  result += "                showData = children[i].checked == true;\r\n";
-  result += "            }\r\n";
-  result += "        }\r\n";
-  result += "        children = document.getElementById(\"showMessage\").childNodes;\r\n";
-  result += "        for (var i = 0; i < children.length; i++) {\r\n";
-  result += "            if (children[i].name == \"message\") {\r\n";
-  result += "                message = children[i].value || \"\";\r\n";
-  result += "            }\r\n";
-  result += "        }\r\n";
-  result += "        var params = \"name=targetServerData\" + \"&allowSendingData=\" + allowSendingData + \"&isOpen=\" + isOpen + \"&showData=\" + showData + \"&message=\" + encodeURIComponent(message);\r\n";
-  result += "        sendData(params);\r\n";
-  result += "    }\r\n";
-  result += "\r\n";
-  */
-  result += "  function saveTargetServer(content) {\r\n";
-  result += "        var children = content.parentNode.childNodes;\r\n";
-  result += "        var targetServer = \"\";\r\n";
-  result += "        var targetPort = \"\";\r\n";
-  result += "        var ratio = \"\";\r\n";
-  result += "        for (var i = 0; i < children.length; i++) {\r\n";
-  result += "            if (children[i].name == \"targetServer\") {\r\n";
-  result += "                targetServer = children[i].value || \"\";\r\n";
-  result += "            }\r\n";
-  result += "            if (children[i].name == \"targetPort\") {\r\n";
-  result += "                targetPort = children[i].value || \"\";\r\n";
-  result += "            }\r\n";
-  result += "            if (children[i].name == \"targetPath\") {\r\n";
-  result += "                targetPath = children[i].value || \"\";\r\n";
-  result += "            }\r\n";
-  result += "        }\r\n";
-  result += "        var params = \"name=targetServer\" + \"&targetServer=\" + encodeURIComponent(targetServer) + \"&targetPort=\" + targetPort + \"&targetPath=\" + encodeURIComponent(targetPath);\r\n";
-  result += "        sendData(params);\r\n";
-  result += "  }\r\n";
-  result += "\r\n";
-  result += "</script>\r\n";
-  result += "\r\n";
-  result += "<script>\r\n";
-  result += "function loadWiFiNetworkList() {\r\n";
-  result += "  var xhttp = new XMLHttpRequest();\r\n";
-  result += "  xhttp.onreadystatechange = function() {\r\n";
-  result += "    if (this.readyState == 4 && this.status == 200) {\r\n";
-  result += "      document.getElementById(\"ssidList\").innerHTML = this.responseText;\r\n";
-  result += "    }\r\n";
-  result += "  };\r\n";
-  result += "  xhttp.open(\"GET\", \"/networkssid/\", true);\r\n";
-  result += "  xhttp.send();\r\n";
-  result += "}\r\n";
-  result += "</script>\r\n";
-  result += "\r\n";
-  result += "<script>\r\n";
-  result += "function allowSendToTargetCheck(content) {\r\n";
-  result += "    if (content.checked == true) {\r\n";
-  result += "        document.getElementById(\"allowed\").style.display=\"block\";\r\n";
-  result += "    }\r\n";
-  result += "    else {\r\n";
-  result += "        document.getElementById(\"allowed\").style.display=\"none\";\r\n";
-  result += "    };\r\n";
-  result += "}\r\n";
-  result += "\r\n";
-  result += "function showDataOnTargetCheck(content) {\r\n";
-  result += "    if (content.checked == true) {\r\n";
-  result += "        document.getElementById(\"showMessage\").style.display=\"block\";\r\n";
-  result += "    }\r\n";
-  result += "    else {\r\n";
-  result += "        document.getElementById(\"showMessage\").style.display=\"none\";\r\n";
-  result += "    };\r\n";
-  result += "}\r\n";
-  result += "</script>\r\n";
-  result += "\r\n";
-  result += "<script>\r\n";
-  result += "function displaySettings() {\r\n";
-  result += "var ele = document.getElementsByName('settings');\r\n";
-  result += "\r\n";
-  result += "  for(i = 0; i < ele.length; i++) {\r\n";
-  result += "    if(ele[i].checked) {\r\n";
-  result += "      document.getElementById(ele[i].value).style.display=\"block\";\r\n";
-  result += "//      if (ele[i].value == 'network') {\r\n";
-  result += "//        loadWiFiNetworkList();\r\n";
-  result += "//      }\r\n";
-  result += "    }\r\n";
-  result += "    else {\r\n";
-  result += "      document.getElementById(ele[i].value).style.display=\"none\";\r\n";
-  result += "    }\r\n";
-  result += "  }\r\n";
-  result += "}\r\n";
-  result += "displaySettings();\r\n";
-  result += "</script>\r\n";
-  result += "</body>\r\n";
-  result += "</html>\r\n";
   server.sendHeader("Cache-Control", "no-cache");
   server.sendHeader("Connection", "keep-alive");
   server.sendHeader("Pragma", "no-cache");
@@ -892,114 +483,73 @@ void wifi(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWiFiSe
   server.send(200, "text/html", result);
 }
 
-///////////////// sse is language independent ///////////////////////////
-void sse(ESP8266WebServer &server, Settings * pSettings, uint32_t revolutions, uint32_t viewPulsesPerMinute)
-{
-  String result = "retry: ";
-  result += String(pSettings->SSE_RETRY);
-  result += "\r\n";
-  result += "data: ";
-  result += "{";
-  result += "\"ratio\":";
-  result += String(pSettings->ratio);
-  result += ",";
-  result += "\"revolutions\":";
-  result += String(revolutions);
-  result += ",";
-  result += "\"rawCounter\":";
-  result += String(pSettings->getCounter());
-  result += ",";
-  result += "\"viewPulsesPerMinute\":";
-  result += String(viewPulsesPerMinute);
-  result += "}\r\n\r\n";
-  server.sendHeader("Cache-Control", "no-cache");
-  server.sendHeader("Connection", "keep-alive");
-  server.sendHeader("Pragma", "no-cache");
-  server.send(200, "text/event-stream", result);
-
-}
-
 ///////////////// Vanaf hier Nederlands ///////////////////////////
-void countPage_nl(ESP8266WebServer &server, Settings * pSettings)
-{
-  String result = "<!DOCTYPE HTML>\r\n<html>\r\n";
-  result += "<head>\r\n";
-  result += "<meta charset=\"utf-8\">\r\n";
-  result += "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\r\n";
-  result += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\r\n";
-  result += "<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->\r\n";
-  result += "<link rel='icon' type='image/png' href='data:image/png;base64,iVBORw0KGgo='>\r\n";
-  result += "<title>molen</title>\r\n";
-  result += "</head>\r\n";
-  result += "<body>\r\n";
-  result += "Teller van de sensor: \r\n";
-  result += "<span id='rawCounter'>-</span>\r\n";
-  result += "<br>\r\n";
-  result += "<br>\r\n";
-  result += "<!-- ratio is 1:\r\n";
-  result += "<span id='ratio'>-</span>\r\n";
-  result += "<br>\r\n";
-  result += "<br>-->\r\n";
-  result += "Teller van wiekenas omwentelingen: \r\n";
-  result += "<h2><span id='revolutions'>-</span></h2>\r\n";
-  result += "<br>\r\n";
-  result += "Aantal enden per minuut: \r\n";
-  result += "<h2><span id='viewPulsesPerMinute'>-</span></h2>\r\n";
-  result += "<br>\r\n";
-  result += "<div id='message'></div>\r\n";
+void info_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWifiSettings) {
+  String starthtml = "<!DOCTYPE HTML>\r\n<html>\r\n";
+  starthtml += "<head>\r\n";
+  starthtml += "<meta charset=\"utf-8\">\r\n";
+  starthtml += "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\r\n";
+  starthtml += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\r\n";
+  starthtml += "<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->\r\n";
+  starthtml += "<link rel='icon' type='image/png' href='data:image/png;base64,iVBORw0KGgo='>\r\n";
+  starthtml += "<title>info</title>\r\n";
+  starthtml += "</head>\r\n";
+  starthtml += "<body>\r\n";
+  String endhtml = "</body>\r\n";
+  endhtml += "</html>\r\n";
+
+  String result = starthtml;
+  String myIP = "";
+  if (WiFi.getMode() == WIFI_AP)
+  {
+    myIP = WiFi.softAPIP().toString();
+    result += "\r\n\r\n<br><br>IP adres: ";
+  }
+  if (WiFi.getMode() == WIFI_STA)
+  {
+    myIP = WiFi.localIP().toString();
+
+    result += "Wachtwoorden en IP adressen worden niet naar de server gestuurd<br>\r\n";
+    result += "Deel van de informatie die je hieronder ziet is opgestuurd naar ";
+    result += pSettings->getTargetServer();     
+  }
+
+  result += "\r\n\r\n<br><br>IP adres: ";
+  result += myIP;
+  result += "\r\n<br><br>";
+
+  result += "\r\n<br>Firmware versie: ";
+  result += pSettings->getFirmwareVersion();
+
+  result += "\r\n<br>Ratio: ";
+  result += pSettings->getRatioArgument();
+
+  result += "\r\n<br>Access Point SSID: ";
+  result += pWifiSettings->readAccessPointSSID();
+
+  result += "\r\n<br>Netwerk SSID: ";
+  result += pWifiSettings->readNetworkSSID();
+
+  result += "\r\n<br>Server naam: ";
+  result += pSettings->getTargetServer();
+
+  result += "\r\n<br>Server poort: ";
+  result += String(pSettings->getTargetPort());
+
+  result += "\r\n<br>Server pad: ";
+  result += pSettings->getTargetPath();
+
   result += "<br>\r\n";
   result += "<br>\r\n";
   result += "<a href='/help/'>Ga naar de begin/help pagina</a>\r\n";
-  result += "<script>\r\n";
-  result += "if(typeof(EventSource) !== 'undefined') {\r\n";
-  //result += "    document.getElementById('result').innerHTML = 'sse event is supported'\r\n";
-  result += "    var source = new EventSource('/data.sse/');\r\n";
-  result += "    source.onmessage = function (e) {\r\n";
-  result += "        try {\r\n";
-  result += "            result = JSON.parse(e.data);\r\n";
-  result += "            document.getElementById('revolutions').innerHTML = result.revolutions;\r\n";
-  result += "            document.getElementById('rawCounter').innerHTML = result.rawCounter;\r\n";
-  result += "            document.getElementById('viewPulsesPerMinute').innerHTML = result.viewPulsesPerMinute;\r\n";
-  result += "            //document.getElementById('ratio').innerHTML = result.ratio;\r\n";
-  result += "        }\r\n";
-  result += "        catch (err) {\r\n";
-  result += "            console.log('Error: ' + err)\r\n";
-  result += "        }\r\n";
-  result += "    }\r\n";
-  result += "} else {\r\n";
-  result += "    document.getElementById('message').innerHTML = 'Deze browser heeft Server-Sent Event support, pagina handmatig verversen dus'\r\n";
-  result += "}\r\n";
-  result += "</script>\r\n";
-  result += "\r\n</body>\r\n</html>\r\n";
 
-  //server.sendHeader("Content-Type", "text/html");
-   server.sendHeader("Cache-Control", "no-cache");
-   server.sendHeader("Connection", "keep-alive");
-   server.sendHeader("Pragma", "no-cache");
-   server.send(200, "text/html", result);
-}
+  result += endhtml;
 
-void showWiFiMode_nl(ESP8266WebServer &server, Settings * pSettings)
-{
-  String result = "<!DOCTYPE HTML>\r\n<html>\r\n";
-  result += "<head>\r\n";
-  result += "<meta charset=\"utf-8\">\r\n";
-  result += "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\r\n";
-  result += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\r\n";
-  result += "<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->\r\n";
-  result += "<link rel='icon' type='image/png' href='data:image/png;base64,iVBORw0KGgo='>\r\n";
-  result += "<title>mill</title>\r\n";
-  result += "</head>\r\n";
-  result += "<body>\r\n";
-  result += "WiFi modus wijziging is bezig zolang beide WiFi leds aan zijn\r\n";
-  result += "<br>\r\n";
-  result += "<br>\r\n";
-  result += "<a href='/help/'>Ga naar de begin/help pagina</a>\r\n";
-  result += "\r\n</body>\r\n</html>\r\n";
   server.sendHeader("Cache-Control", "no-cache");
   server.sendHeader("Connection", "keep-alive");
   server.sendHeader("Pragma", "no-cache");
   server.send(200, "text/html", result);
+  server.send(200, "text/html", result);    
 }
 
 void help_nl(ESP8266WebServer &server, Settings * pSettings)
@@ -1017,6 +567,9 @@ void help_nl(ESP8266WebServer &server, Settings * pSettings)
   result += "<input id=\"EN\" type=\"button\" onclick=\"selectLanguage(this)\" value=\"English\">\r\n";
   result += "<input id=\"NL\" type=\"button\" onclick=\"selectLanguage(this)\" value=\"Nederlands\">\r\n";
   result += "<br><br>\r\n";
+  result += "WiFi modus kan gewijzigd worden met de kleine knop op de Teller<br\r\n";
+  result += "Beide leds gaan aan en na een tijdje blijft er een aan: groen is Station, geel is Access Point\r\n";
+  result += "<br>\r\n";
   result += "WiFi modus: ";
   if (pSettings->beginAsAccessPoint() == true)
   {
@@ -1050,9 +603,9 @@ void help_nl(ESP8266WebServer &server, Settings * pSettings)
   result += "<br><br><br>\r\n";
   result += "<a href='/help/'>Help</a> begin/help scherm\r\n";
   result += "<br><br>\r\n";
-  result += "<a href='/device/'>Teller instellingen</a> ratio, Server instellingen\r\n";
-  result += "<br><br>\r\n";
   result += "<a href='/wifi/'>WiFi</a> instellingen om de Teller te koppelen aan WiFi\r\n";
+  result += "<br><br>\r\n";
+  result += "<a href='/info/'>Informatie</a> op het scherm, wordt deels ook verzonden naar de server. Wachtwoorden en IP adressen worden niet verstuurd<br>\r\n";
   result += "<br><br>\r\n";
   result += "<script>\r\n";
   result += "  function restart() {\r\n";
@@ -1124,426 +677,6 @@ void help_nl(ESP8266WebServer &server, Settings * pSettings)
 
   result += "</script>\r\n";
   result += "\r\n</body>\r\n</html>\r\n";
-  server.sendHeader("Cache-Control", "no-cache");
-  server.sendHeader("Connection", "keep-alive");
-  server.sendHeader("Pragma", "no-cache");
-  server.send(200, "text/html", result);
-}
-
-void showSavedSettings_nl(ESP8266WebServer &server, Settings * pSettings)
-{
-  String result = "<!DOCTYPE HTML>\r\n<html>\r\n";
-  result += "<head>\r\n";
-  result += "<meta charset=\"utf-8\">\r\n";
-  result += "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\r\n";
-  result += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\r\n";
-  result += "<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->\r\n";
-  result += "<link rel='icon' type='image/png' href='data:image/png;base64,iVBORw0KGgo='>\r\n";
-  result += "<title>molen</title>\r\n";
-  result += "</head>\r\n";
-  result += "<body>\r\n";
-  result += "Settings\r\n";
-  result += "<br><br>\r\n";
-  result += "opgeslagen tellerstand: \r\n";
-  result += String(pSettings->getCounter());
-  result += "\r\n";
-  result += "<br>\r\n";
-  result += "opgeslagen opgegeven ratio: \r\n";
-  result += pSettings->getRatioArgument();
-  result += "\r\n";
-  result += "<br>\r\n";
-  result += "opgeslagen berekende ratio: \r\n";
-  result += String(pSettings->ratio);
-  result += "\r\n";
-  result += "<br>\r\n";
-  result += "opgeslagen deviceKey: \r\n";
-  result += pSettings->getDeviceKey();
-  result += "\r\n";
-  result += "<br>\r\n";
-  result += "opgeslagen berekende pulse factor: \r\n";
-  result += String(pSettings->pulseFactor);
-  result += "\r\n";
-  result += "<br>\r\n";
-  result += "<br>\r\n";
-  result += "<a href='/help/'>Ga naar de begin/help pagina</a>\r\n";
-  result += "</body>\r\n";
-  result += "</html>\r\n";
-  server.sendHeader("Cache-Control", "no-cache");
-  server.sendHeader("Connection", "keep-alive");
-  server.sendHeader("Pragma", "no-cache");
-  server.send(200, "text/html", result);
-}
-
-void arguments_nl(ESP8266WebServer &server, Settings * pSettings)
-{
-  // Prepare the response. Start with the common header:
-  //uint8_t foundArgument = 0;
-  String message = "";
-  for (uint8_t i=0; i< server.args(); i++){
-    if (String( server.argName(i)) == "rawCounter") {
-      pSettings->setCounter(server.arg(i));
-    }
-    if (String( server.argName(i)) == "ratio") {
-      uint8_t delimiterCount = 0;
-      
-      if (server.argName(i).length() > pSettings->getMAX_RATIO_ARGUMENT()) {
-        message += "ratio argument is te lang, maximum lengte is: ";
-        message += String(pSettings->getMAX_RATIO_ARGUMENT());
-      
-      }
-      else {
-        for (uint8 c = 0; c <  server.arg(i).length(); c++ ) {
-          if ( server.arg(i)[c] == pSettings->getAXES_DELIMITER()) {
-            delimiterCount += 1;
-          }
-        }
-        if ((delimiterCount > pSettings->getMAX_AXES()) || (delimiterCount > pSettings->getMAX_WHEELS())) {
-          message += "ratio argument is ongeldig, moet eruit zien als: aantalWieken-aantalTanden.aantalTanden-aantalTanden ... Zet waarde op 1";
-          pSettings->setRatioArgument(pSettings->getFactoryRatioArgument());
-          pSettings->ratio = 1.0;
-          pSettings->pulseFactor = 1.0;
-        }
-        else {
-          pSettings->setRatioArgument(server.arg(i));
-          pSettings->calculateRatio( server.arg(i));  // where settings.ratio is set
-          pSettings->calculatePulseFactor ( server.arg(i));  // where settings.pulseFactor is set
-        }
-        pSettings->saveSettings();
-      }     
-    }
-  }
-}
-
-void device_nl(ESP8266WebServer &server, Settings * pSettings)
-{
-  String result = "<!DOCTYPE HTML><html>\r\n";
-  result += "<head>\r\n";
-  result += "<meta charset=\"utf-8\">\r\n";
-  result += "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\r\n";
-  result += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\r\n";
-  result += "<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->\r\n";
-  result += "<link rel='icon' type='image/png' href='data:image/png;base64,iVBORw0KGgo='>\r\n";
-  result += "<title>molen</title>\r\n";
-  result += "</head>\r\n";
-  result += "<body>\r\n";
-  result += "Instellingen voor de Teller\r\n";
-  result += "<br><br>\r\n";
-  result += "<input type=\"radio\" name=\"settings\" onclick=\"displaySettings()\" value=\"device\" checked>Teller\r\n";
-  result += "<br>\r\n";
-  //result += "<input type=\"radio\" name=\"settings\" onclick=\"displaySettings()\" value=\"targetServerData\">Gegevens naar de server\r\n";
-  //result += "<br>\r\n";
-  result += "<input type=\"radio\" name=\"settings\" onclick=\"displaySettings()\" value=\"targetServer\">Server instellingen\r\n";
-  result += "<br>\r\n";
-  result += "<br>\r\n";
-  result += "<div id=\"device\">\r\n";
-  /*
-  result += "    <br>\r\n";
-  result += "    Set de  WiFi start modus in <input id=\"startWiFiMode\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  result += pSettings->getFactoryStartModeWiFi();
-  result += "\" value=\"reset\">\r\n";
-  result += "    <br>\r\n";
-  result += "    <input type=\"radio\" name=\"startWiFiMode\" value=\"ap\" ";
-  result += (pSettings->beginAsAccessPoint() == true)?"checked":"";
-  result += "> start als Access Point\r\n";
-  result += "    <br>\r\n";
-  result += "    <input type=\"radio\" name=\"startWiFiMode\" value=\"network\" ";
-  result += (pSettings->beginAsAccessPoint() == true)?"":"checked";
-  result += "> start als Netwerk Station\r\n";
-  result += "    <br><br>\r\n";
-  */
-  //result += "  Telstand: <input type=\"text\" name=\"counter\" min=\"0\" max=\"4294967296\" maxlength=\"10\" size=\"12\" placeholder=\"";
-  //result += String(pSettings->getCounter());
-  //result += "\" title=\"Dit is de huidige telstand, in te stellen naar een waarde (0 - 4294967296)\" value=\"\" factorySetting=\"124\" onkeyup=\"checkNumber(this, 'counterMessage', 'Ongeldig nummer (0 - 4294967296)');\">\r\n";
-  //result += "    <input id=\"counter\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  //result += String(pSettings->getFactoryCounter());
-  //result += "\" value=\"reset\">\r\n";
-  //result += "    <span id=\"counterMessage\"></span><br><br>\r\n";
-  //result += "  <br>\r\n";
-  result += "  Ratio: <input type=\"text\" name=\"ratio\" maxlength=\"64\" size=\"40\" placeholder=\"4-72.33-80.24\" title=\"4-72.33-80\" value=\"";
-  result += pSettings->getRatioArgument();
-  result += "\" onkeyup=\"checkRatio(this, 'ratioMessage', 'Ongeldig ratio karakter of combinatie (-. -- .. .-)');\">\r\n";
-  result += "    <input id=\"ratio\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  result += pSettings->getFactoryRatioArgument();
-  result += "\" value=\"reset\">\r\n";
-  result += "  <span id=\"ratioMessage\"></span><br><br>\r\n";
-  result += "  Na 'Save' even geduld tot er een bevestiging is.\r\n";
-  result += "  <br>\r\n";
-  result += "  <input id=\"deviceButton\" type=\"button\" name=\"deviceButton\" value=\"Save\" onclick=\"saveDevice(this)\">\r\n";
-  result += "  <input type=\"button\" name=\"deviceCancelButton\" value=\"Cancel\" onclick=\"cancelSettings()\">\r\n";
-  result += "</div>\r\n";
-  result += "\r\n";
-  result += "<div id=\"targetServer\">\r\n";
-  result += "    <br>\r\n";
-  result += "    Server\r\n";
-  result += "    <br>\r\n";
-  result += "  Domein naam: <input type=\"text\" name=\"targetServer\" maxlength=\"32\" size=\"33\" placeholder=\"protocol://domein naam\" value=\"";
-  result += pSettings->getTargetServer();
-  result += "\"> Max 32 karakters\r\n";
-  result += "    <input id=\"targetServer\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  result += pSettings->getFactoryTargetServer();
-  result += "\" value=\"reset\">\r\n";
-  result += "    <br>\r\n";
-  result += "    Poort: <input type=\"text\" name=\"targetPort\" min=\"0\" max=\"65536\" maxlength=\"5\" size=\"6\" placeholder=\"poort\" title=\"0 - 65536\" value=\"";
-  result += String(pSettings->getTargetPort());
-  result += "\"  onkeyup=\"checkNumber(this, 'portMessage', 'ongeldig nummer (0 - 65536)');\">\r\n";
-  result += "    <input id=\"targetPort\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  result += String(pSettings->getFactoryTargetPort());
-  result += "\" value=\"reset\">\r\n";
-  result += "    <span id=\"portMessage\"></span>\r\n";
-  result += "    <br>\r\n";
-  result += "    Pad: <input type=\"text\" name=\"targetPath\" maxlength=\"16\" size=\"17\" placeholder=\"pad\" value=\"";
-  result += pSettings->getTargetPath();
-  result += "\"> Max 16 karakters\r\n";
-  result += "    <input id=\"targetPath\" type=\"button\" onclick=\"factorySetting(this)\" reset=\"";
-  result += pSettings->getFactoryTargetPath();
-  result += "\" value=\"reset\">\r\n";
-  result += "  <br><br>\r\n";
-  result += "  Na 'Save' even geduld tot er een bevestiging is.\r\n";
-  result += "    <br>\r\n";
-  result += "  <input id=\"targetServerButton\" type=\"button\" name=\"targetServerButton\" value=\"Save\" onclick=\"saveTargetServer(this)\">\r\n";
-  result += "  <input type=\"button\" name=\"targetServerCancelButton\" value=\"Cancel\" onclick=\"cancelSettings()\">\r\n";
-  result += "</div>\r\n";
-  result += "\r\n";
-  result += "<br>\r\n";
-  result += "<div id=\"sendMessage\"></div>\r\n";
-  result += "\r\n";
-  result += "<br>\r\n";
-  result += "<br>\r\n";
-  result += "<a href='/help/'>Ga naar de begin/help pagina</a>\r\n";
-  result += "<script>\r\n";
-  result += "  function factorySetting(component) {\r\n";
-  result += "      var id = component.id || \"\";\r\n";
-  result += "      var factoryValue = component.getAttribute(\"reset\");\r\n";
-  result += "      var names = document.getElementsByName(id) || [];\r\n";
-  result += "      if (names.length > 0) {\r\n";
-  result += "        var type = names[0].getAttribute(\"type\");\r\n";
-  result += "        if (type == \"radio\")\r\n";
-  result += "        {\r\n";
-  result += "            for (var i = 0; i < names.length; i++)\r\n";
-  result += "            {\r\n";
-  result += "                if (names[i].value == factoryValue) {\r\n";
-  result += "                    names[i].checked = true;\r\n";
-  result += "                };\r\n";
-  result += "            }\r\n";
-  result += "        }\r\n";
-  result += "        if (type == \"checkbox\")\r\n";
-  result += "        {\r\n";
-  result += "            var factoryValueArray = factoryValue.split(\",\");\r\n";
-  result += "            for (var i = 0; i < names.length; i++)\r\n";
-  result += "            {\r\n";
-  result += "                names[i].checked = false;\r\n";
-  result += "                for (var e = 0; e < factoryValueArray.length; e++)\r\n";
-  result += "                {\r\n";
-  result += "                    if (names[i].value == factoryValueArray[e].trim()) {\r\n";
-  result += "                        names[i].checked = true;\r\n";
-  result += "                    }\r\n";
-  result += "                }\r\n";
-  result += "            }\r\n";
-  result += "        }\r\n";
-  result += "        if (type == \"text\")\r\n";
-  result += "        {\r\n";
-  result += "            names[0].value = factoryValue;\r\n";
-  result += "        }\r\n";
-  result += "      }\r\n";
-  result += "  }\r\n";
-  result += "\r\n";
-  result += "  function checkRatio(component, messageId, message) {\r\n";
-  result += "    var buttonId = component.parentNode.id + \"Button\";\r\n";
-  result += "    var validCharacterString = \"0123456789-.\";\r\n";
-  result += "    var valid = false;\r\n";
-  result += "      var currentChar = component.value.charAt(component.value.length - 1);\r\n";
-  result += "      if (validCharacterString.indexOf(currentChar) > -1) {\r\n";
-  result += "    valid = true;\r\n";
-  result += "    };\r\n";
-  result += "      if ( (component.value.indexOf(\".-\") > -1) ||\r\n";
-  result += "           (component.value.indexOf(\"--\") > -1) ||\r\n";
-  result += "           (component.value.indexOf(\"..\") > -1) ||\r\n";
-  result += "           (component.value.indexOf(\"-.\") > -1) ) {\r\n";
-  result += "          valid = false;\r\n";
-  result += "      }\r\n";
-  result += "    if (valid) {\r\n";
-  result += "      document.getElementById(messageId).innerHTML = \"\";\r\n";
-  result += "    }\r\n";
-  result += "    else {\r\n";
-  result += "    document.getElementById(messageId).innerHTML = message;\r\n";
-  result += "    }\r\n";
-  result += "    document.getElementById(buttonId).disabled = !valid;\r\n";
-  result += "    return valid;\r\n";
-  result += "  }\r\n";
-  result += "\r\n";
-  result += "  function checkNumber(component, messageId, message) {\r\n";
-  result += "    var buttonId = component.parentNode.id + \"Button\";\r\n";
-  result += "  //var validCharacterString = \"0123456789-.\";\r\n";
-  result += "  var valid = false;\r\n";
-  result += "    if ((component.value >= Number(component.getAttribute(\"min\"))) && (component.value <= Number(component.getAttribute(\"max\")))) {\r\n";
-  result += "        valid = true;\r\n";
-  result += "    }\r\n";
-  result += "    if (valid) {\r\n";
-  result += "      document.getElementById(messageId).innerHTML = \"\";\r\n";
-  result += "    }\r\n";
-  result += "    else {\r\n";
-  result += "    document.getElementById(messageId).innerHTML = message;\r\n";
-  result += "    }\r\n";
-  result += "    document.getElementById(buttonId).disabled = !valid;\r\n";
-  result += "    return valid;\r\n";
-  result += "  }\r\n";
-  result += "\r\n";
-  result += "  function cancelSettings() {\r\n";
-  result += "  window.location.reload();\r\n";
-  result += "  }\r\n";
-  result += "  function sendData(data) {\r\n";
-  result += "    var xhr = new XMLHttpRequest();   // new HttpRequest instance\r\n";
-  result += "    xhr.open(\"POST\", \"/deviceSettings/\");\r\n";
-  result += "    xhr.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");\r\n";
-  result += "    //xhr.setRequestHeader(\"Content-Type\", \"application/json\");\r\n";
-  result += "      document.getElementById(\"sendMessage\").innerHTML = \"Even geduld\";\r\n";
-  result += "      xhr.onreadystatechange = function() { // Call a function when the state changes.\r\n";
-  result += "        var myResponseText = \"\";\r\n";
-  result += "        if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {\r\n";
-  result += "          myResponseText = this.responseText || \"\";\r\n";
-  result += "        }\r\n";
-  result += "        if (this.readyState === XMLHttpRequest.DONE && this.status !== 200) {\r\n";
-  result += "          myResponseText = this.statusText || \"\";\r\n";
-  result += "        }\r\n";
-  result += "        document.getElementById(\"sendMessage\").innerHTML = myResponseText;\r\n";
-  result += "      }\r\n";
-  //result += "    }\r\n";
-  result += "    xhr.send(data);\r\n";
-  result += "  }\r\n";
-  result += "\r\n";
-  result += "  function saveDevice(content) {\r\n";
-  result += "        var children = content.parentNode.childNodes;\r\n";
-  //result += "        var startWiFiMode = \"\";\r\n";
-  result += "        var counter = \"\";\r\n";
-  result += "        var ratio = \"\";\r\n";
-  result += "        for (var i = 0; i < children.length; i++) {\r\n";
-  result += "            if (children[i].name == \"startWiFiMode\") {\r\n";
-  result += "                if (children[i].checked == true) {\r\n";
-  result += "                    startWiFiMode = children[i].value || true;\r\n";
-  result += "                }\r\n";
-  result += "            }\r\n";
-  //result += "            if (children[i].name == \"counter\") {\r\n";
-  //result += "                counter = children[i].value || \"\";\r\n";
-  //result += "            }\r\n";
-  result += "            if (children[i].name == \"ratio\") {\r\n";
-  result += "                ratio = children[i].value || \"\";\r\n";
-  result += "            }\r\n";
-  result += "        }\r\n";
-  //result += "        var params = \"name=device\" + \"&startWiFiMode=\" + startWiFiMode + \"&counter=\" + counter + \"&ratio=\" + ratio;\r\n";
-  //result += "        var params = \"name=device\" + \"&startWiFiMode=\" + startWiFiMode + \"&ratio=\" + ratio;\r\n";
-  result += "        var params = \"name=device\" + \"&ratio=\" + ratio;\r\n";
-  result += "        sendData(params);\r\n";
-  result += "  }\r\n";
-  result += "\r\n";
-  /*    still available in settings
-  result += "  function saveTargetServerData(content) {\r\n";
-  result += "        var children = content.parentNode.childNodes;\r\n";
-  result += "        var allowSendingData = \"\";\r\n";
-  result += "        var isOpen = \"\";\r\n";
-  result += "        var showData = \"\";\r\n";
-  result += "        var message = \"\";\r\n";
-  result += "        for (var i = 0; i < children.length; i++) {\r\n";
-  result += "            if (children[i].name == \"allowSendToTarget\") {\r\n";
-  result += "                allowSendingData = children[i].checked == true;\r\n";
-  result += "            }\r\n";
-  result += "        }\r\n";
-  result += "        children = document.getElementById(\"allowed\").childNodes;\r\n";
-  result += "        for (var i = 0; i < children.length; i++) {\r\n";
-  result += "            if (children[i].name == \"entree\") {\r\n";
-  result += "                if (children[i].checked == true) {\r\n";
-  result += "                    isOpen = children[i].value || \"\";\r\n";
-  result += "                }\r\n";
-  result += "            }\r\n";
-  result += "            if (children[i].name == \"showDataOnTarget\") {\r\n";
-  result += "                showData = children[i].checked == true;\r\n";
-  result += "            }\r\n";
-  result += "        }\r\n";
-  result += "        children = document.getElementById(\"showMessage\").childNodes;\r\n";
-  result += "        for (var i = 0; i < children.length; i++) {\r\n";
-  result += "            if (children[i].name == \"message\") {\r\n";
-  result += "                message = children[i].value || \"\";\r\n";
-  result += "            }\r\n";
-  result += "        }\r\n";
-  result += "        var params = \"name=targetServerData\" + \"&allowSendingData=\" + allowSendingData + \"&isOpen=\" + isOpen + \"&showData=\" + showData + \"&message=\" + encodeURIComponent(message);\r\n";
-  result += "        sendData(params);\r\n";
-  result += "    }\r\n";
-  result += "\r\n";
-  */
-  result += "  function saveTargetServer(content) {\r\n";
-  result += "        var children = content.parentNode.childNodes;\r\n";
-  result += "        var targetServer = \"\";\r\n";
-  result += "        var targetPort = \"\";\r\n";
-  result += "        var ratio = \"\";\r\n";
-  result += "        for (var i = 0; i < children.length; i++) {\r\n";
-  result += "            if (children[i].name == \"targetServer\") {\r\n";
-  result += "                targetServer = children[i].value || \"\";\r\n";
-  result += "            }\r\n";
-  result += "            if (children[i].name == \"targetPort\") {\r\n";
-  result += "                targetPort = children[i].value || \"\";\r\n";
-  result += "            }\r\n";
-  result += "            if (children[i].name == \"targetPath\") {\r\n";
-  result += "                targetPath = children[i].value || \"\";\r\n";
-  result += "            }\r\n";
-  result += "        }\r\n";
-  result += "        var params = \"name=targetServer\" + \"&targetServer=\" + encodeURIComponent(targetServer) + \"&targetPort=\" + targetPort + \"&targetPath=\" + encodeURIComponent(targetPath);\r\n";
-  result += "        sendData(params);\r\n";
-  result += "  }\r\n";
-  result += "\r\n";
-  result += "</script>\r\n";
-  result += "\r\n";
-  result += "<script>\r\n";
-  result += "function loadWiFiNetworkList() {\r\n";
-  result += "  var xhttp = new XMLHttpRequest();\r\n";
-  result += "  xhttp.onreadystatechange = function() {\r\n";
-  result += "    if (this.readyState == 4 && this.status == 200) {\r\n";
-  result += "      document.getElementById(\"ssidList\").innerHTML = this.responseText;\r\n";
-  result += "    }\r\n";
-  result += "  };\r\n";
-  result += "  xhttp.open(\"GET\", \"/networkssid/\", true);\r\n";
-  result += "  xhttp.send();\r\n";
-  result += "}\r\n";
-  result += "</script>\r\n";
-  result += "\r\n";
-  result += "<script>\r\n";
-  result += "function allowSendToTargetCheck(content) {\r\n";
-  result += "    if (content.checked == true) {\r\n";
-  result += "        document.getElementById(\"allowed\").style.display=\"block\";\r\n";
-  result += "    }\r\n";
-  result += "    else {\r\n";
-  result += "        document.getElementById(\"allowed\").style.display=\"none\";\r\n";
-  result += "    };\r\n";
-  result += "}\r\n";
-  result += "\r\n";
-  result += "function showDataOnTargetCheck(content) {\r\n";
-  result += "    if (content.checked == true) {\r\n";
-  result += "        document.getElementById(\"showMessage\").style.display=\"block\";\r\n";
-  result += "    }\r\n";
-  result += "    else {\r\n";
-  result += "        document.getElementById(\"showMessage\").style.display=\"none\";\r\n";
-  result += "    };\r\n";
-  result += "}\r\n";
-  result += "</script>\r\n";
-  result += "\r\n";
-  result += "<script>\r\n";
-  result += "function displaySettings() {\r\n";
-  result += "var ele = document.getElementsByName('settings');\r\n";
-  result += "\r\n";
-  result += "  for(i = 0; i < ele.length; i++) {\r\n";
-  result += "    if(ele[i].checked) {\r\n";
-  result += "      document.getElementById(ele[i].value).style.display=\"block\";\r\n";
-  result += "//      if (ele[i].value == 'network') {\r\n";
-  result += "//        loadWiFiNetworkList();\r\n";
-  result += "//      }\r\n";
-  result += "    }\r\n";
-  result += "    else {\r\n";
-  result += "      document.getElementById(ele[i].value).style.display=\"none\";\r\n";
-  result += "    }\r\n";
-  result += "  }\r\n";
-  result += "}\r\n";
-  result += "displaySettings();\r\n";
-  result += "</script>\r\n";
-  result += "</body>\r\n";
-  result += "</html>\r\n";
   server.sendHeader("Cache-Control", "no-cache");
   server.sendHeader("Connection", "keep-alive");
   server.sendHeader("Pragma", "no-cache");

@@ -244,8 +244,7 @@ uint16_t Settings::saveSettings()
 
   uint16_t firstAddress = this->address;
   uint16_t address = this->address;
- 
- 
+
   //EEPROM.begin(this->storageSize);
   EEPROM.begin(this->MAX_EEPROM_SIZE);
 
@@ -507,7 +506,46 @@ uint16_t Settings::getSettings()
   return address - firstAddress;
 }
 
-uint16_t Settings::saveConfigurationSettings()
+uint16_t Settings::saveTargetServerStuff()
+{
+  // The function EEPROM.put() uses EEPROM.update() to perform the write, so does not rewrites the value if it didn't change.
+  // It seems to help preventing ESPerror messages with mode(3,6) when using a delay 
+  delay(this->WAIT_PERIOD);
+
+  uint16_t firstAddress = this->address;
+  uint16_t address = this->address;
+
+  EEPROM.begin(this->MAX_EEPROM_SIZE);
+
+  address += sizeof(this->initNumber);
+  address += sizeof(this->major);
+  address += sizeof(this->minor);
+  address += sizeof(this->patch);
+  address += 3;  // language
+  address += sizeof(this->startAsAccessPoint);
+
+  char myTargetServer[33];  // one more for the null character
+  strcpy(myTargetServer, this->targetServer.c_str());
+  EEPROM.put(address, myTargetServer);
+  address += 33;
+
+  EEPROM.put(address, this->targetPort);
+  address += sizeof(this->targetPort);
+
+  char myTargetPath[17];  // one more for the null character
+  strcpy(myTargetPath, this->targetPath.c_str());
+  EEPROM.put(address, myTargetPath);
+  address += 17;
+
+  EEPROM.commit();    // with success it will return true
+  EEPROM.end();       // release RAM copy of EEPROM content
+  
+  delay(this->WAIT_PERIOD);
+
+  return address - firstAddress;
+}
+
+uint16_t Settings::saveRatioArgument()
 {
   // The function EEPROM.put() uses EEPROM.update() to perform the write, so does not rewrites the value if it didn't change.
   // It seems to help preventing ESPerror messages with mode(3,6) when using a delay 
@@ -516,73 +554,22 @@ uint16_t Settings::saveConfigurationSettings()
   uint16_t firstAddress = this->address;
   uint16_t address = this->address;
  
-  //EEPROM.begin(this->storageSize);
   EEPROM.begin(this->MAX_EEPROM_SIZE);
 
-  //EEPROM.put(address, this->initNumber);
   address += sizeof(this->initNumber);
-  //EEPROM.put(address, this->version);
   address += sizeof(this->major);
   address += sizeof(this->minor);
   address += sizeof(this->patch);
-  
-  address += 3;  // language
-
-  //bool check_startAsAccessPoint;
-  //EEPROM.get(address, check_startAsAccessPoint);
-  //if (check_startAsAccessPoint != this->startAsAccessPoint) {
-  bool _startAsAccessPoint = false;  // always try to start as Network Station is default
-  //EEPROM.put(address, this->startAsAccessPoint);
-  EEPROM.put(address, _startAsAccessPoint);
-  //  EEPROM.put(address, this->startAsAccessPoint);
-  //}
+  address += 3;   // language
   address += sizeof(this->startAsAccessPoint);
 
-  //char check_myTargetServer[33];  // one more for the null character
-  //EEPROM.get(address, check_myTargetServer);
-  char myTargetServer[33];  // one more for the null character
-  strcpy(myTargetServer, this->targetServer.c_str());
-  //if (check_myTargetServer != myTargetServer) {
-    EEPROM.put(address, myTargetServer);
-  //}
-  address += 33;
-
-  //uint16_t check_targetPort;
-  //EEPROM.get(address, check_targetPort);
-  //if (check_targetPort != this->targetPort) {
-    EEPROM.put(address, this->targetPort);
-  //}
+  address += 33;  // targetServer
   address += sizeof(this->targetPort);
+  address += 17;  // targetPath
 
-  //char check_myTargetPath[17];  // one more for the null character
-  //EEPROM.get(address, check_myTargetPath);
-  char myTargetPath[17];  // one more for the null character
-  strcpy(myTargetPath, this->targetPath.c_str());
-  //if (check_myTargetPath != myTargetPath) {
-    EEPROM.put(address, myTargetPath);
-  //}
-  address += 17;
-
-  //char check_myRatioArgument[65];  // one more for the null character
-  //EEPROM.get(address, check_myRatioArgument);
   char myRatioArgument[65];  // one more for the null character
   strcpy(myRatioArgument, this->ratioArgument.c_str());
-  //if (check_myRatioArgument != myRatioArgument) {
-    EEPROM.put(address, myRatioArgument);
-  //}
-  address += 65;
-
-  /*
-  //char check_myDeviceKey[37];  // one more for the null character
-  //EEPROM.get(address, check_myDeviceKey);
-  char myDeviceKey[37];  // one more for the null character
-  strcpy(myDeviceKey, this->deviceKey.c_str());
-  //if (check_myDeviceKey != myDeviceKey) {
-    EEPROM.put(address, myDeviceKey);
-  //}
-  */
- 
-///  address += 37;
+  EEPROM.put(address, myRatioArgument);
 
   EEPROM.commit();    // with success it will return true
   EEPROM.end();       // release RAM copy of EEPROM content
@@ -594,6 +581,45 @@ uint16_t Settings::saveConfigurationSettings()
 
   return address - firstAddress;
 }
+
+uint16_t Settings::saveDeviceKey()
+{
+  // The function EEPROM.put() uses EEPROM.update() to perform the write, so does not rewrites the value if it didn't change.
+  // It seems to help preventing ESPerror messages with mode(3,6) when using a delay 
+  delay(this->WAIT_PERIOD);
+
+  uint16_t firstAddress = this->address;
+  uint16_t address = this->address;
+ 
+  EEPROM.begin(this->MAX_EEPROM_SIZE);
+
+  address += sizeof(this->initNumber);
+  address += sizeof(this->major);
+  address += sizeof(this->minor);
+  address += sizeof(this->patch);
+  address += 3;   // language
+  address += sizeof(this->startAsAccessPoint);
+
+  address += 33;  // targetServer
+  address += sizeof(this->targetPort);
+  address += 17;  // targetPath
+
+  address += 65;  // ratioArgument
+
+  char myDeviceKey[37];  // one more for the null character
+  strcpy(myDeviceKey, this->deviceKey.c_str());
+  EEPROM.put(address, myDeviceKey);
+
+  EEPROM.commit();    // with success it will return true
+  EEPROM.end();       // release RAM copy of EEPROM content
+  
+  delay(this->WAIT_PERIOD);
+
+  return address - firstAddress;
+}
+
+
+
 
 uint16_t Settings::getOffsetAddress()
 {
