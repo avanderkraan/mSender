@@ -33,11 +33,11 @@ const uint8_t ACCESSPOINT_LED = D3;
 const uint8_t STATION_LED= D1;
 
 // variables for reset to STA mode
-const uint16_t NO_STA_COUNTER_MAX = 6000; // with a delay of 50 ms the max pause time is 5 minutes
+const uint16_t NO_STA_COUNTER_MAX = 60000; // with a delay of 5 ms the max time in AP-mode is 5 minutes
 uint16_t no_sta_counter = 0;
 bool eepromStartModeAP = false;     // see setup, holds the startmode from eeprom
 
-const uint32_t RELAX_PERIOD = 2;    // Is also a small energy saving, in milliseconds
+//const uint32_t RELAX_PERIOD = 2;    // Is also a small energy saving, in milliseconds
 const uint32_t TOO_LONG = 60000;    // after this period the pulsesPerMinute = 0 (in milliseconds)
 bool permissionToDetect = false;    // all sensors must have had a positive value 
 
@@ -367,7 +367,7 @@ void ICACHE_RAM_ATTR detectPulse() {  // ICACHE_RAM_ATTR is voor interrupts
   // after a valid pulse the value of permissionToDetect is set to false to start over again
   echoInterruptOff();
     // for energy savings a delay is added of n milliseconds
-  delayInMillis(RELAX_PERIOD);
+  //delayInMillis(RELAX_PERIOD);
 
   if ( (digitalRead(IR_RECEIVE_1) == true) && 
       (digitalRead(IR_RECEIVE_2) == true) &&
@@ -1008,7 +1008,7 @@ void setup()
   delay(pSettings->WAIT_PERIOD);
 
   echoInterruptOn();
-
+  
   buttonInterruptOn();
   digitalWrite(IR_SEND, HIGH);   // always on
 }
@@ -1064,7 +1064,7 @@ void loop()
     if (no_sta_counter < NO_STA_COUNTER_MAX)
     {
       no_sta_counter +=1;
-      delay(50);          // small value because loop must continue for other purposes
+      delay(5);          // small value because loop must continue for other purposes
     }
     else {
       no_sta_counter = 0;
@@ -1072,12 +1072,11 @@ void loop()
     }
     echoInterruptOn();
   }
-
+  
   checkGlobalPulseInLoop();
   if (millis() > pulseLedOnTime + 1)
   {
     digitalWrite(PULSE_LED, LOW);
   }
-
   digitalWrite(PULSE_LED, LOW);
 }
