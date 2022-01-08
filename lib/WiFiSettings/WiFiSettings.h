@@ -48,10 +48,10 @@ public:
     this->storageSize = 132;   // including 4 NULL characters in total (1 for each part) 
 
     /* first thing to do is set the start-address for this module to the offsetaddress as defined in Settings */ 
-    this->address = pSettings->getOffsetAddress();
+    this->address = pSettings->getWiFiDataAddress();
 
     /* if there is not enough space on EEPROM, writing will fail and reading will return an empty String */
-    if (pSettings->setOffsetAddress(this->storageSize) == true)  // is there enough space on EEPROM?
+    if (pSettings->getWiFiDataAddress() + this->storageSize < this->MAX_EEPROM_SIZE)  // is there enough space on EEPROM?
     {
       this->storageSizeIsAvailable = true;
 

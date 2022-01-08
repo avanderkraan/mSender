@@ -12,8 +12,8 @@ public:
 private:
   /* 4 bytes to store, version of this firmware */
   uint8_t major = 0;    // max 2^8 = 256
-  uint8_t minor = 2;    // max 2^8 = 256
-  uint16_t patch = 1;  // max 2^16 = 65536
+  uint8_t minor = 3;    // max 2^8 = 256
+  uint16_t patch = 0;  // max 2^16 = 65536
 
   /* start as Access Point or as Network client */
   bool startAsAccessPoint = false;
@@ -67,10 +67,13 @@ private:
   const uint16_t address = 0;
 
   /* first available address for Settings storage, for use in other functions or classes */
-  uint16_t addressOffset = 0;
+  //uint16_t addressOffset = 0;
+
+  /* first address for WiFiData */
+  uint16_t wifiDataAddress = 512;
 
   /* check for first saved initialization */
-  const uint8_t INITCHECK = 61;
+  const uint8_t INITCHECK = 60;
 
   /* 1 byte to store, holds check for first initialization */
   uint8_t initNumber = 0;
@@ -115,14 +118,14 @@ public:
 public:
   Settings()
   {
-    this->storageSize = sizeof(this->initNumber) + 
-                        sizeof(this->major) + 
-                        sizeof(this->minor) + 
-                        sizeof(this->patch) + 
+    this->storageSize = sizeof(this->initNumber) + // 1
+                        sizeof(this->major) +      // 1
+                        sizeof(this->minor) +      // 1
+                        sizeof(this->patch) +      // 2
                         3 +                   // language (NL) + 1
-                        sizeof(this->startAsAccessPoint) +
+                        sizeof(this->startAsAccessPoint) +  // 1
                         33 +                  // max size targetServer + 1
-                        sizeof(this->targetPort) + 
+                        sizeof(this->targetPort) + // 2
                         17 +                  // max size of targetPath + 1
                         65 +                 // MAX_RATIO_ARGUMENT + 1
                         37;                  // MAX_DEVICEKEY + 1
@@ -133,7 +136,7 @@ public:
     this->setOffsetAddress(this->storageSize); is the same as:
         this->addressOffset = this->address + this->storageSize;
     */
-    this->addressOffset = this->address + this->storageSize;
+    //this->addressOffset = this->address + this->storageSize;
     this->setupEEPROM();
     this->setupUpdatedFirmware();
   };
@@ -269,10 +272,13 @@ public:
   String getFactoryRatioArgument(); // keeps ratioArgument, for future use in a form 
 
   /* EEPROM Offset Address, for use in other functions or classes */
-  uint16_t getOffsetAddress();
+  //uint16_t getOffsetAddress();
+
+  /* EEPROM value for wifi data, used in WifiSettings */
+  uint16_t getWiFiDataAddress();
 
   /* EEPROM set new value for Offset Address, for use in other functions or classes */
-  bool setOffsetAddress(uint16_t deltaAddress);
+  //bool setOffsetAddress(uint16_t deltaAddress);
 
   /* returns factory setting beginAs AccessPoint for WiFi start-mode, translated to "ap" or "network" */
   String getFactoryStartModeWiFi();

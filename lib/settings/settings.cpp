@@ -618,14 +618,19 @@ uint16_t Settings::saveDeviceKey()
   return address - firstAddress;
 }
 
-
-
-
+/*
 uint16_t Settings::getOffsetAddress()
 {
   return this->addressOffset;
 }
+*/
 
+uint16_t Settings::getWiFiDataAddress()
+{
+  return this->wifiDataAddress;
+}
+
+/*
 bool Settings::setOffsetAddress(uint16_t deltaAddress)
 {
   if (this->getOffsetAddress() + deltaAddress > this->MAX_EEPROM_SIZE)
@@ -635,6 +640,7 @@ bool Settings::setOffsetAddress(uint16_t deltaAddress)
   this->addressOffset += deltaAddress;
   return true;
 }
+*/
 
 void Settings::setCounter(uint32_t counter)
 {

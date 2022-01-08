@@ -63,8 +63,7 @@ void info(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWifiSe
   server.sendHeader("Cache-Control", "no-cache");
   server.sendHeader("Connection", "keep-alive");
   server.sendHeader("Pragma", "no-cache");
-  server.send(200, "text/html", result);
-  server.send(200, "text/html", result);    
+  server.send(200, "text/html", result);   
 }
 
 void showWiFiMode(ESP8266WebServer &server, Settings * pSettings)
@@ -145,7 +144,7 @@ void help(ESP8266WebServer &server, Settings * pSettings)
   result += "<br><br>\r\n";
   result += "<a href='/wifi/'>WiFi</a> settings to connect the Counter to WiFi\r\n";
   result += "<br><br>\r\n";
-  result += "<a href='/info/'>Information</a> shown on screen and partial sent to the server. Passwords and IP addresses are not sent<br>\r\n";
+  result += "<a href='/info/'>Information</a> shown on screen and partially sent to the server. Passwords and IP addresses are not sent<br>\r\n";
   result += "<br><br>\r\n";
   result += "<script>\r\n";
   result += "  function restart() {\r\n";
@@ -503,7 +502,6 @@ void info_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWif
   if (WiFi.getMode() == WIFI_AP)
   {
     myIP = WiFi.softAPIP().toString();
-    result += "\r\n\r\n<br><br>IP adres: ";
   }
   if (WiFi.getMode() == WIFI_STA)
   {
@@ -548,8 +546,7 @@ void info_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWif
   server.sendHeader("Cache-Control", "no-cache");
   server.sendHeader("Connection", "keep-alive");
   server.sendHeader("Pragma", "no-cache");
-  server.send(200, "text/html", result);
-  server.send(200, "text/html", result);    
+  server.send(200, "text/html", result); 
 }
 
 void help_nl(ESP8266WebServer &server, Settings * pSettings)
@@ -605,7 +602,7 @@ void help_nl(ESP8266WebServer &server, Settings * pSettings)
   result += "<br><br>\r\n";
   result += "<a href='/wifi/'>WiFi</a> instellingen om de Teller te koppelen aan WiFi\r\n";
   result += "<br><br>\r\n";
-  result += "<a href='/info/'>Informatie</a> op het scherm, wordt deels ook verzonden naar de server. Wachtwoorden en IP adressen worden niet verstuurd<br>\r\n";
+  result += "<a href='/info/'>Informatie</a> op het scherm, wordt deels verzonden naar de server. Wachtwoorden en IP adressen worden niet verstuurd<br>\r\n";
   result += "<br><br>\r\n";
   result += "<script>\r\n";
   result += "  function restart() {\r\n";
