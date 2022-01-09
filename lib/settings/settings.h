@@ -66,9 +66,6 @@ private:
   /* first address for Settings storage */
   const uint16_t address = 0;
 
-  /* first available address for Settings storage, for use in other functions or classes */
-  //uint16_t addressOffset = 0;
-
   /* first address for WiFiData */
   uint16_t wifiDataAddress = 512;
 
@@ -122,21 +119,17 @@ public:
                         sizeof(this->major) +      // 1
                         sizeof(this->minor) +      // 1
                         sizeof(this->patch) +      // 2
-                        3 +                   // language (NL) + 1
+                        3 +                        // language (NL) + 1
                         sizeof(this->startAsAccessPoint) +  // 1
-                        33 +                  // max size targetServer + 1
+                        33 +                       // max size targetServer + 1
                         sizeof(this->targetPort) + // 2
-                        17 +                  // max size of targetPath + 1
-                        65 +                 // MAX_RATIO_ARGUMENT + 1
-                        37;                  // MAX_DEVICEKEY + 1
+                        17 +                       // max size of targetPath + 1
+                        65 +                       // MAX_RATIO_ARGUMENT + 1
+                        37;                        // MAX_DEVICEKEY + 1
 
     //this->initSettings(); // is called through the browser
     /* set new address offset */
-    /*
-    this->setOffsetAddress(this->storageSize); is the same as:
-        this->addressOffset = this->address + this->storageSize;
-    */
-    //this->addressOffset = this->address + this->storageSize;
+
     this->setupEEPROM();
     this->setupUpdatedFirmware();
   };
@@ -155,6 +148,7 @@ private:
   /* converts a string of numbers to an unsigned 32 bits number */
   uint32_t atoi32_t(String s);
 
+  /* first and last elements are part of the given ratio */
   String getFirstElement(String line, char delimiter);
   String getLastElement(String line, char delimiter);
 
@@ -271,14 +265,8 @@ public:
   /* MAX_RATIO_ARGUMENT bytes to store, factory setting, user-entered ratio as argument, example: "4-72.99.33-80.24" */
   String getFactoryRatioArgument(); // keeps ratioArgument, for future use in a form 
 
-  /* EEPROM Offset Address, for use in other functions or classes */
-  //uint16_t getOffsetAddress();
-
   /* EEPROM value for wifi data, used in WifiSettings */
   uint16_t getWiFiDataAddress();
-
-  /* EEPROM set new value for Offset Address, for use in other functions or classes */
-  //bool setOffsetAddress(uint16_t deltaAddress);
 
   /* returns factory setting beginAs AccessPoint for WiFi start-mode, translated to "ap" or "network" */
   String getFactoryStartModeWiFi();

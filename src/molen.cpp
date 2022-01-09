@@ -15,10 +15,6 @@
 /////////////////////
 // Pin Definitions //
 /////////////////////
-// On a ESP8266-12 GPIO0 is used, physical name is pin D0
-// On a ESP8266-12 GPIO5 is used, physical name is pin D5
-
-// when using D0 only one direction of receiver works, so now using D8
 
 // D5 gives troubles when it is high at the start.
 
@@ -37,14 +33,13 @@ const uint16_t NO_STA_COUNTER_MAX = 60000; // with a delay of 5 ms the max time 
 uint16_t no_sta_counter = 0;
 bool eepromStartModeAP = false;     // see setup, holds the startmode from eeprom
 
-//const uint32_t RELAX_PERIOD = 2;    // Is also a small energy saving, in milliseconds
 const uint32_t TOO_LONG = 60000;    // after this period the pulsesPerMinute = 0 (in milliseconds)
 bool permissionToDetect = false;    // all sensors must have had a positive value 
 
 uint32_t startPulse = millis();     // set the offset time for a passing a pulse
 uint32_t pulsesPerMinute = 0;       // holds the value of pulses per minute
 uint32_t revolutions = 0;           // holds the value of revolutions of the first axis, calculated with ratio
-uint32_t bladesPerMinute = 0;   // holds the value of ends per minute calculated with ratio
+uint32_t bladesPerMinute = 0;       // holds the value of ends per minute calculated with ratio
 uint32_t pulseLedOnTime = millis(); // holds the last time a pulse was detected, used as flag for the pulse_led
 
 Settings settings = Settings();
@@ -366,8 +361,6 @@ void ICACHE_RAM_ATTR detectPulse() {  // ICACHE_RAM_ATTR is voor interrupts
   // if both sensors are false and permissionToDetect == true then it counts as a valid pulse
   // after a valid pulse the value of permissionToDetect is set to false to start over again
   echoInterruptOff();
-    // for energy savings a delay is added of n milliseconds
-  //delayInMillis(RELAX_PERIOD);
 
   if ( (digitalRead(IR_RECEIVE_1) == true) && 
       (digitalRead(IR_RECEIVE_2) == true) &&
@@ -904,7 +897,7 @@ void toggleWiFi()
   if (pSettings->beginAsAccessPoint() == true)
   {
     //switchToAccessPoint();
-    setupWiFi();        // local network as access point
+    setupWiFi();          // local network as access point
   }
   else
   {
