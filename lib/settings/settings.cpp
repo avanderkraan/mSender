@@ -245,10 +245,8 @@ uint16_t Settings::saveSettings()
   uint16_t firstAddress = this->address;
   uint16_t address = this->address;
 
-  //EEPROM.begin(this->storageSize);
   EEPROM.begin(this->MAX_EEPROM_SIZE);
 
-  //uint32_t start = micros();
   EEPROM.put(address, this->initNumber);
   address += sizeof(this->initNumber);
   EEPROM.put(address, this->major);
@@ -390,10 +388,8 @@ uint16_t Settings::initSettings()
   uint16_t firstAddress = this->address;
   uint16_t address = this->address;
 
-  //EEPROM.begin(this->storageSize);
   EEPROM.begin(this->MAX_EEPROM_SIZE);
 
-  //uint32_t start = micros();
   EEPROM.put(address, this->factoryInitNumber);
   address += sizeof(this->factoryInitNumber);
   EEPROM.put(address, this->major);
@@ -454,12 +450,12 @@ uint16_t Settings::getSettings()
   uint16_t firstAddress = this->address;
   uint16_t address = this->address;
 
-  //EEPROM.begin(this->storageSize);
   EEPROM.begin(this->MAX_EEPROM_SIZE);
   
   EEPROM.get(address, this->initNumber);
   address += sizeof(this->initNumber);
-  //EEPROM.get(address, this->version); // is done at setupFirmware
+
+  // major, minor, batch is done at setupFirmware
   address += sizeof(this->major);
   address += sizeof(this->minor);
   address += sizeof(this->patch);
@@ -710,8 +706,7 @@ void Settings::setLanguage(String language)
   delay(this->WAIT_PERIOD);
 
   uint16_t address = this->address;
- 
-  //EEPROM.begin(this->storageSize);
+
   EEPROM.begin(this->MAX_EEPROM_SIZE);
   address += sizeof(this->initNumber);
   address += sizeof(this->major);
