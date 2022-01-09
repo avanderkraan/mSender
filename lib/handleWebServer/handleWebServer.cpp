@@ -25,15 +25,15 @@ void info(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWifiSe
     myIP = WiFi.localIP().toString();
 
     result += "Passwords and IP addresses are not sent to the server<br>\r\n";
-    result += "Part of the information you see below has been sent to ";
+    result += "Information with bold characters which you see has been sent to ";
     result += pSettings->getTargetServer();
   }
 
-  result += "\r\n\r\n<br><br>IP adres: ";
+  result += "\r\n\r\n<br><br>IP address: ";
   result += myIP;
   result += "\r\n<br><br>";
 
-  result += "\r\n<br>Firmware version: ";
+  result += "\r\n<br><strong>Firmware version: ";
   result += pSettings->getFirmwareVersion();
 
   result += "\r\n<br>Ratio: ";
@@ -44,6 +44,7 @@ void info(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWifiSe
 
   result += "\r\n<br>Network SSID: ";
   result += pWifiSettings->readNetworkSSID();
+  result += "</strong>";
 
   result += "\r\n<br>Server name: ";
   result += pSettings->getTargetServer();
@@ -508,7 +509,7 @@ void info_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWif
     myIP = WiFi.localIP().toString();
 
     result += "Wachtwoorden en IP adressen worden niet naar de server gestuurd<br>\r\n";
-    result += "Deel van de informatie die je hieronder ziet is opgestuurd naar ";
+    result += "Informatie met dikgedrukte letters die je hieronder ziet is opgestuurd naar ";
     result += pSettings->getTargetServer();     
   }
 
@@ -516,7 +517,7 @@ void info_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWif
   result += myIP;
   result += "\r\n<br><br>";
 
-  result += "\r\n<br>Firmware versie: ";
+  result += "\r\n<br><strong>Firmware versie: ";
   result += pSettings->getFirmwareVersion();
 
   result += "\r\n<br>Ratio: ";
@@ -527,6 +528,7 @@ void info_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWif
 
   result += "\r\n<br>Netwerk SSID: ";
   result += pWifiSettings->readNetworkSSID();
+  result += "<strong>";
 
   result += "\r\n<br>Server naam: ";
   result += pSettings->getTargetServer();
