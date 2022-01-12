@@ -31,7 +31,6 @@ void info(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWifiSe
 
   result += "\r\n\r\n<br><br>IP address: ";
   result += myIP;
-  result += "\r\n<br><br>";
 
   result += "\r\n<br><strong>Firmware version: ";
   result += pSettings->getFirmwareVersion();
@@ -237,9 +236,9 @@ void wifi(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWiFiSe
   result += "<title>mill</title>\r\n";
   result += "</head>\r\n";
   result += "<body>\r\n";
-  result += "Don't want to share with internet or no WiFi available? Choose AccessPoint\r\n";
+  result += "Choose AccessPoint to change the default AccessPoint SSID and password\r\n";
   result += "<br>\r\n";
-  result += "You want to share with internet and have WiFi available? Choose Network\r\n";
+  result += "Choose Network to connect the sender to your WiFi\r\n";
   result += "<br><br>\r\n";
   result += "<input type=\"radio\" name=\"wifi\" onclick=\"displayWiFiMode()\" value=\"ap\">Access Point\r\n";
   result += "<br>\r\n";
@@ -515,7 +514,6 @@ void info_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWif
 
   result += "\r\n\r\n<br><br>IP adres: ";
   result += myIP;
-  result += "\r\n<br><br>";
 
   result += "\r\n<br><strong>Firmware versie: ";
   result += pSettings->getFirmwareVersion();
@@ -528,7 +526,7 @@ void info_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWif
 
   result += "\r\n<br>Netwerk SSID: ";
   result += pWifiSettings->readNetworkSSID();
-  result += "<strong>";
+  result += "</strong>";
 
   result += "\r\n<br>Server naam: ";
   result += pSettings->getTargetServer();
@@ -694,9 +692,9 @@ void wifi_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWiF
   result += "<title>molen</title>\r\n";
   result += "</head>\r\n";
   result += "<body>\r\n";
-  result += "Wil gegevens niet delen met internet of geen WiFi beschikbaar? Kies AccessPoint\r\n";
+  result += "Kies AccessPoint om de standaard waarden voor AccessPoint SSID en wachtwoord te wijzigen\r\n";
   result += "<br>\r\n";
-  result += "Wil gegevens delen met internet en er is WiFi beschibaar? Kies Netwerk Station\r\n";
+  result += "Kies Netwerk Station om de zender te koppelen aan je eigen WiFi\r\n";
   result += "<br><br>\r\n";
   result += "<input type=\"radio\" name=\"wifi\" onclick=\"displayWiFiMode()\" value=\"ap\">Access Point\r\n";
   result += "<br>\r\n";
