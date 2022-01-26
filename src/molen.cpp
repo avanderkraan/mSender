@@ -29,19 +29,18 @@ const uint8_t ACCESSPOINT_LED = D3;
 const uint8_t STATION_LED= D1;
 
 // variables for reset to STA mode
-const uint16_t NO_STA_COUNTER_MAX = 60000; // with a delay of 5 ms the max time in AP-mode is 5 minutes
+const uint16_t NO_STA_COUNTER_MAX = 6000;   // with a delay of 50 ms the max time in AP-mode is 5 minutes
 uint16_t no_sta_counter = 0;
-bool eepromStartModeAP = false;     // see setup, holds the startmode from eeprom
+const uint32_t NO_RESPONSE_MILLIS = 300000; // no response since the last 5 minutes? then try connect to WiFi
+bool eepromStartModeAP = false;             // see setup, holds the startmode from eeprom
 
-const uint32_t TOO_LONG = 60000;    // after this period the pulsesPerMinute = 0 (in milliseconds)
-bool permissionToDetect = false;    // all sensors must have had a positive value 
+bool permissionToDetect = false;            // all sensors must have had a positive value 
 
-uint32_t startPulse = millis();     // set the offset time for a passing a pulse
-uint32_t pulsesPerMinute = 0;       // holds the value of pulses per minute
-uint32_t revolutions = 0;           // holds the value of revolutions of the first axis, calculated with ratio
-uint32_t bladesPerMinute = 0;       // holds the value of ends per minute calculated with ratio
-uint32_t pulseLedOnTime = millis(); // holds the last time a pulse was detected, used as flag for the pulse_led
-
+uint32_t startPulse = millis();             // set the offset time for a passing a pulse
+uint32_t pulsesPerMinute = 0;               // holds the value of pulses per minute
+uint32_t revolutions = 0;                   // holds the value of revolutions of the first axis, calculated with ratio
+uint32_t bladesPerMinute = 0;               // holds the value of ends per minute calculated with ratio
+uint32_t pulseLedOnTime = millis();         // holds the last time a pulse was detected, used as flag for the pulse_led
 Settings settings = Settings();
 Settings* pSettings = &settings;
 
@@ -57,6 +56,9 @@ WiFiSettings* pWifiSettings = &wifiSettings;
 asyncHTTPrequest aRequest;
 long lastSendMillis;
 
+// lastResponseMillis keeps track if a response was received, otherwise try to connect to WiFi again
+long lastResponseMillis;
+
 // detectButtonFlag lets the program know that a network-toggle is going on
 bool detectButtonFlag = false;
 
@@ -70,7 +72,7 @@ bool updateSucceeded = false;
 bool detectInfoRequest = false;
 
 // Forward declaration
-void setupWiFi();
+void setupWiFiAsAccessPoint();
 void handleInfo();
 void switchToAccessPoint();
 void initServer();
@@ -119,7 +121,7 @@ void initSettings() {
 }
 // end Settings and EEPROM stuff
 
-void setupWiFi(){
+void setupWiFiAsAccessPoint(){
   echoInterruptOff();  // to prevent error with Delay
   digitalWrite(ACCESSPOINT_LED, HIGH);
   digitalWrite(STATION_LED, HIGH);
@@ -163,7 +165,7 @@ void setupWiFi(){
 
 }
 
-void setupWiFiManager () {
+void setupWiFiAsStation () {
   bool networkConnected = false;
   echoInterruptOff();  // to prevent error with Delay
 
@@ -243,7 +245,7 @@ void switchToAccessPoint() {
   resetWiFiManagerToFactoryDefaults();
   delay(pSettings->WAIT_PERIOD);
 
-  setupWiFi();
+  setupWiFiAsAccessPoint();
   delay(pSettings->WAIT_PERIOD);
 
   initServer();
@@ -264,7 +266,7 @@ void switchToNetwork() {
   resetWiFiManagerToFactoryDefaults();
   delay(pSettings->WAIT_PERIOD);
 
-  setupWiFiManager();
+  setupWiFiAsStation();
   delay(pSettings->WAIT_PERIOD);
 
   delay(pSettings->WAIT_PERIOD);
@@ -285,12 +287,21 @@ void writeResult(WiFiClient wifiClient, String result) {
 void checkGlobalPulseInLoop() {
   // sets value to 0 after a period of time
   uint32_t elapsedTime;
+  uint8_t stepDown = 8;
   if (millis() > startPulse) {  // check for overflow
     
     elapsedTime = millis() - startPulse;
-    if (elapsedTime * pSettings->ratio > TOO_LONG) {
-      pulsesPerMinute  = 0;
-      bladesPerMinute = 0;
+    // fake a startPulse to gradually lower the speed, do not count pulses
+    if (elapsedTime * pSettings->ratio > (pSettings->getSEND_PERIOD() * 2)) {
+      pulsesPerMinute = 0;
+      if (bladesPerMinute > stepDown)
+      {
+        bladesPerMinute -= stepDown;
+      }
+      else{
+        bladesPerMinute = 0;
+      }
+      startPulse = millis();   
     }   
   }
 }
@@ -319,6 +330,10 @@ void setGlobalPulsesPerMinute() {
       }
    //}
     startPulse = millis();
+  }
+  else
+  {
+    startPulse = millis();  // reset after overflow, skip setting pulsesPeminute
   }
 }
 
@@ -872,24 +887,6 @@ void processServerData(String responseData)
   }
 }
 
-void requestCB(void* optParm, asyncHTTPrequest* request, int readyState){
-  if (readyState == 4)
-  {
-    if (request->responseHTTPcode() == 200)
-    {
-      String response = request->responseText();
-      processServerData(response);
-    }
-    else
-    {
-      if (request->responseHTTPcode() > 0)
-      {
-        //Serial.println(request->responseText());
-      }
-    }
-  }
-}
-
 void toggleWiFi()
 {
   // only toggle by using the button, not saving in EEPROM
@@ -897,12 +894,12 @@ void toggleWiFi()
   if (pSettings->beginAsAccessPoint() == true)
   {
     //switchToAccessPoint();
-    setupWiFi();          // local network as access point
+    setupWiFiAsAccessPoint();          // local network as access point
   }
   else
   {
     //switchToNetwork();
-    setupWiFiManager();   // part of local network as station
+    setupWiFiAsStation();   // part of local network as station
   }
 }
 
@@ -974,18 +971,18 @@ void setup()
 
   // see https://forum.arduino.cc/index.php?topic=121654.0 voor circuit brownout
   delay(pSettings->WAIT_PERIOD);
-  // use EITHER setupWiFi OR setupWiFiManager
+  // use EITHER setupWiFiAsAccessPoint OR setupWiFiAsStation
   
   // get saved setting from EEPROM
   eepromStartModeAP = pSettings->beginAsAccessPoint();
 
   if (pSettings->beginAsAccessPoint())
   {
-    setupWiFi();        // local network as access point
+    setupWiFiAsAccessPoint();        // local network as access point
   }
   else
   {
-    setupWiFiManager();   // part of local network as station
+    setupWiFiAsStation();   // part of local network as station
   }
 
   delay(pSettings->WAIT_PERIOD);
@@ -997,6 +994,7 @@ void setup()
 
   // for asyncrequest
   lastSendMillis = millis();
+  lastResponseMillis = millis();
 
   delay(pSettings->WAIT_PERIOD);
 
@@ -1030,7 +1028,7 @@ void loop()
 
   // For ESP8266WebServer
   server.handleClient();
-  
+
   // For handleHTTPClient
   if (WiFi.getMode() == WIFI_STA)
   {
@@ -1046,27 +1044,34 @@ void loop()
     String response = getAsyncResponse(&aRequest);
     if (response != "") 
     {
+      lastResponseMillis = millis();
       processServerData(response);
+    }
+    if (millis() - lastResponseMillis > NO_RESPONSE_MILLIS)
+    {
+      lastResponseMillis = millis();
+      setupWiFiAsStation();
     }
   }
 
   // For automatic Reset after loosing WiFi connection in STA mode
   if ((WiFi.getMode() == WIFI_AP) && (eepromStartModeAP == false))
   {
-    echoInterruptOff();
+    //echoInterruptOff();
     if (no_sta_counter < NO_STA_COUNTER_MAX)
     {
       no_sta_counter +=1;
-      delay(5);          // small value because loop must continue for other purposes
+      delayInMillis(50);         // small value because loop must continue for other purposes
     }
     else {
       no_sta_counter = 0;
-      setupWiFiManager();  // try to start WiFi again
+      setupWiFiAsStation();  // try to start WiFi again
     }
-    echoInterruptOn();
+    //echoInterruptOn();
   }
   
   checkGlobalPulseInLoop();
+
   if (millis() > pulseLedOnTime + 1)
   {
     digitalWrite(PULSE_LED, LOW);
