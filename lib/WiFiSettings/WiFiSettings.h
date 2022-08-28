@@ -130,7 +130,7 @@ private:
   bool isInitialized();
 
   /* does the erase of EEPROM addresses */
-  bool eraseSettings(uint16 startAddress, uint lastAddress);
+  bool eraseSettings(uint16_t startAddress, uint16_t lastAddress);
 
 public:
   /* Used in this class program to check the availablity of storage space */

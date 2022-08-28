@@ -29,8 +29,8 @@ const uint8_t ACCESSPOINT_LED = D3;
 const uint8_t STATION_LED= D1;
 
 // variables for reset to STA mode
-const uint16_t NO_STA_COUNTER_MAX = 6000;   // with a delay of 50 ms the max time in AP-mode is 5 minutes
-uint16_t no_sta_counter = 0;
+unsigned long lastStartMillis = millis();
+const uint32_t NO_STA_MAX_MILLIS = 300000;  // 300 000 millis leaves an interval of 5 minutes
 const uint32_t NO_RESPONSE_MILLIS = 300000; // no response since the last 5 minutes? then try connect to WiFi
 bool eepromStartModeAP = false;             // see setup, holds the startmode from eeprom
 
@@ -78,11 +78,11 @@ void switchToAccessPoint();
 void initServer();
 void sendExample();
 
-void ICACHE_RAM_ATTR detectPulse();
+void IRAM_ATTR detectPulse();
 void echoInterruptOn();
 void echoInterruptOff();
 
-void ICACHE_RAM_ATTR detectButton();
+void IRAM_ATTR detectButton();
 void buttonInterruptOn();
 void buttonInterruptOff();
 
@@ -144,12 +144,12 @@ void setupWiFiAsAccessPoint(){
   IPAddress subnet(255,255,255,0);
 
 
-  Serial.print("Setting soft-AP ... ");
+  Serial.println("Setting soft-AP ... ");
   // mypass needs minimum of 8 characters
-  Serial.println(WiFi.softAP(myssid,mypass,3,0) ? "Ready" : "Failed!");
-  Serial.print("Setting soft-AP configuration ... ");
+  Serial.print("Setting soft-AP configuration: ");
   Serial.println(WiFi.softAPConfig(local_IP, gateway, subnet) ? "Ready" : "Failed!");
-  Serial.print("Connecting to AP mode");
+  Serial.print("Connecting to AP mode: ");
+  Serial.println(WiFi.softAP(myssid,mypass,3,0) ? "Ready" : "Failed!");
 
   delay(500);
   Serial.print("Soft-AP IP address = ");
@@ -348,7 +348,7 @@ void delayInMillis(uint8_t ms)
   }
 }
 
-void ICACHE_RAM_ATTR detectButton() {  // ICACHE_RAM_ATTR is voor interrupts
+void IRAM_ATTR detectButton() {  // IRAM_ATTR is voor interrupts
   // this function is called after a change of pressed button  
   buttonInterruptOff();  // to prevent exception
 
@@ -370,7 +370,7 @@ void buttonInterruptOff() {
   detachInterrupt(BUTTON);
 }
 
-void ICACHE_RAM_ATTR detectPulse() {  // ICACHE_RAM_ATTR is voor interrupts
+void IRAM_ATTR detectPulse() {  // IRAM_ATTR is voor interrupts
   // this function is called after a change of every sensor-value
   // wait until both sensors are true, then permissionToDetect = true
   // if both sensors are false and permissionToDetect == true then it counts as a valid pulse
@@ -438,10 +438,6 @@ void handleWiFi() {
 }
 
 void handleInfo() {
-  if (WiFi.getMode() == WIFI_STA)
-  {
-    detectInfoRequest = true;
-  }
   if (pSettings->getLanguage() == "NL")
   {
     info_nl(server, pSettings, pWifiSettings);
@@ -543,6 +539,10 @@ void handleVersion() {
     // search name 
     if (name == "update")
     {
+      if (WiFi.getMode() == WIFI_STA)
+      {
+        detectInfoRequest = true;
+      }
       if (argumentCounter > 0)
       {
         result = updateFirmware("latest");
@@ -656,6 +656,7 @@ void handleConnect() {
   handleInfo();
 }
 
+/*
 void handleHelp() {
   if (pSettings->getLanguage() == "NL")
   {
@@ -666,6 +667,7 @@ void handleHelp() {
     help(server, pSettings);
   }
 }
+*/
 
 void handleLanguage() {
   uint8_t argumentCounter = 0;
@@ -922,13 +924,14 @@ void initServer()
   server.close();
   // start webserver
 
-  server.on("/help/", handleHelp);
+  //server.on("/help/", handleHelp);
 
   // handles notFound
-  server.onNotFound(handleHelp);
+  server.onNotFound(handleWiFi);
 
   // interactive pages
   server.on("/wifi/", handleWiFi);
+  server.on("/info/", handleInfo);
   // handles input from interactive pages
   server.on("/networkssid/", handleNetworkSSID);
   server.on("/wifiConnect/", handleWifiConnect);
@@ -950,9 +953,6 @@ void initServer()
   // /connect/ without arguments connects to the production server, 
   //           port and path
   server.on("/connect/", handleConnect);
-
-  // handles info
-  server.on("/info/", handleInfo);
 
   server.begin();
   Serial.println("HTTP server started");
@@ -1058,14 +1058,10 @@ void loop()
   if ((WiFi.getMode() == WIFI_AP) && (eepromStartModeAP == false))
   {
     //echoInterruptOff();
-    if (no_sta_counter < NO_STA_COUNTER_MAX)
+    if (millis() > lastStartMillis + NO_STA_MAX_MILLIS)
     {
-      no_sta_counter +=1;
-      delayInMillis(50);         // small value because loop must continue for other purposes
-    }
-    else {
-      no_sta_counter = 0;
-      setupWiFiAsStation();  // try to start WiFi again
+      lastStartMillis = millis();
+      setupWiFiAsStation();   // try to start WiFi again
     }
     //echoInterruptOn();
   }
