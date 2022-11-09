@@ -175,13 +175,13 @@ String getUpdatePart(Settings * pSettings)
   {
     result += "Access Point\r\n";
     result += "<br>\r\n";
-    result += "(url: <a href='http://model.local/' target='_blank'>model.local</a> or <a href='http://192.168.4.1/' target='_blank'>http://192.168.4.1</a>)\r\n";
+    result += "(url: <a href='http://molen.local/' target='_blank'>molen.local</a> or <a href='http://192.168.4.1/' target='_blank'>http://192.168.4.1</a>)\r\n";
   }
   else
   {
     result += "Network Station\r\n";
     result += "<br>\r\n";
-    result += "(url: <a href='http://model.local/' target='_blank'>model.local</a> or via a local IP address, last known is: <a href='http://";
+    result += "(url: <a href='http://molen.local/' target='_blank'>molen.local</a> or via a local IP address, last known is: <a href='http://";
     result += pSettings->getLastNetworkIP();
     result += "/' target='_blank'>";
     result += pSettings->getLastNetworkIP();
@@ -255,9 +255,9 @@ String getUpdatePart_nl(Settings * pSettings)
     result += "Netwerk Station\r\n";
   }
   result += "<br>\r\n";
-  result += "(url voor Access Point: <a href='http://model.local/' target='_blank'>model.local</a> of <a href='http://192.168.4.1/' target='_blank'>http://192.168.4.1</a>)\r\n";
+  result += "(url voor Access Point: <a href='http://molen.local/' target='_blank'>molen.local</a> of <a href='http://192.168.4.1/' target='_blank'>http://192.168.4.1</a>)\r\n";
   result += "<br>\r\n";
-  result += "(url voor Netwerk Station: <a href='http://model.local/' target='_blank'>model.local</a> of via een lokaal IP adres, laatst bekende adres is: <a href='http://";
+  result += "(url voor Netwerk Station: <a href='http://molen.local/' target='_blank'>molen.local</a> of via een lokaal IP adres, laatst bekende adres is: <a href='http://";
   result += pSettings->getLastNetworkIP();
   result += "/' target='_blank'>";
   result += pSettings->getLastNetworkIP();
@@ -408,7 +408,7 @@ String getFooterPart_nl(Settings * pSettings)
 void info(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWifiSettings) {
   String result = getHeaderPart(INFO);
   result += "<div class='menu-header'>\r\n";
-  result += "Info about the mill model\r\n";
+  result += "Info about the mill sensor\r\n";
   result += "</div>\r\n";
   result += "<br><br><br>\r\n";
 
@@ -476,12 +476,12 @@ void wifi(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWiFiSe
 {
   String result = "";
   result += "<div class='menu-header'>\r\n";
-  result += "WiFi settings for the mill model\r\n";
+  result += "WiFi settings for the mill sensor\r\n";
   result += "</div>\r\n";
   result += "<br><br><br>\r\n";
   result += "Choose AccessPoint to change the default password\r\n";
   result += "<br>\r\n";
-  result += "Choose Network to connect the model to your own WiFi\r\n";
+  result += "Choose Network to connect the mill-sensor to your own WiFi\r\n";
   result += "<br><br>\r\n";
   result += "<input type=\"radio\" name=\"wifi\" onclick=\"displayWiFiMode();\" value=\"ap\">Access Point\r\n";
   result += "<br>\r\n";
@@ -721,7 +721,7 @@ void wifi(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWiFiSe
 void info_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWifiSettings) {
   String result = getHeaderPart_nl(INFO);
   result += "<div class='menu-header'>\r\n";
-  result += "Informatie over het molen model\r\n";
+  result += "Informatie over de molen sensor\r\n";
   result += "</div>\r\n";
   result += "<br><br><br>\r\n";
 
@@ -790,12 +790,12 @@ void wifi_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWiF
 //  String result = getHeaderPart_nl(WIFI);
   String result = "";
   result += "<div class='menu-header'>\r\n";
-  result += "WiFi instellingen voor het molen model\r\n";
+  result += "WiFi instellingen voor de molen sensor\r\n";
   result += "</div>\r\n";
   result += "<br><br><br>\r\n";
   result += "Kies AccessPoint om het standaard wachtwoord te wijzigen\r\n";
   result += "<br>\r\n";
-  result += "Kies Netwerk Station om het model te koppelen aan je eigen WiFi\r\n";
+  result += "Kies Netwerk Station om de molen sensor te koppelen aan je eigen WiFi\r\n";
   result += "<br><br>\r\n";
   result += "<input type=\"radio\" name=\"wifi\" onclick=\"displayWiFiMode();\" value=\"ap\">Access Point\r\n";
   result += "<br>\r\n";
