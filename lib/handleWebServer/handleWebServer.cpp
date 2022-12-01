@@ -176,17 +176,32 @@ String getUpdatePart(Settings * pSettings)
     result += "Access Point\r\n";
     result += "<br>\r\n";
     result += "(url: <a href='http://molen.local/' target='_blank'>molen.local</a> or <a href='http://192.168.4.1/' target='_blank'>http://192.168.4.1</a>)\r\n";
+    result += "<br>\r\n";
+    if (pSettings->getLastNetworkIP() == "Unknown")
+    {
+      result += "(last known Network address is unknown";
+      result += ")\r\n";
+    }
+    else
+    {
+      result += "(last known Network address is: ";
+      result += pSettings->getLastNetworkIP();
+      result += ")\r\n";
+    }
   }
   else
   {
     result += "Network Station\r\n";
     result += "<br>\r\n";
-    result += "(url: <a href='http://molen.local/' target='_blank'>molen.local</a> or via a local IP address, last known is: <a href='http://";
-    result += pSettings->getLastNetworkIP();
-    result += "/' target='_blank'>";
-    result += pSettings->getLastNetworkIP();
-    result += "</a>\r\n";
-    result += ")\r\n";
+    if (pSettings->getLastNetworkIP() != "Unknown")
+    {
+      result += "(url: <a href='http://molen.local/' target='_blank'>molen.local</a> or via a local IP address, last known is: <a href='http://";
+      result += pSettings->getLastNetworkIP();
+      result += "/' target='_blank'>";
+      result += pSettings->getLastNetworkIP();
+      result += "</a>\r\n";
+      result += ")\r\n";
+    }
   }
   result += "<br><br><input id='restartButton' type='button' onclick='restart();' value='Restart'<br>\r\n";
   result += "<br><br>\r\n";
@@ -222,7 +237,7 @@ String getUpdatePart(Settings * pSettings)
   result += "  function sendUpdateFirmware(data, path) {\r\n";
   result += "    var xhr = new XMLHttpRequest();   // new HttpRequest instance\r\n";
   result += "    xhr.open(\"POST\", path);\r\n";
-  result += "    xhr.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");\r\n";
+  result += "    xhr.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded; charset=UTF-8\");\r\n";
   result += "    document.getElementById(\"sendMessage\").innerHTML = \"Please wait\";\r\n";
   result += "    xhr.onreadystatechange = function() { // Call a function when the state changes\r\n";
   result += "     var myResponseText = \"\";\r\n";
@@ -249,20 +264,35 @@ String getUpdatePart_nl(Settings * pSettings)
   if (pSettings->beginAsAccessPoint() == true)
   {
     result += "Access Point\r\n";
+    result += "<br>\r\n";
+    result += "(url: <a href='http://molen.local/' target='_blank'>molen.local</a> of <a href='http://192.168.4.1/' target='_blank'>http://192.168.4.1</a>)\r\n";
+    result += "<br>\r\n";
+    if (pSettings->getLastNetworkIP() == "Unknown")
+    {
+      result += "(laatst bekende Netwerk adres is onbekend";
+      result += ")\r\n";
+    }
+    else
+    {
+      result += "(laatst bekende Netwerk adres is: ";
+      result += pSettings->getLastNetworkIP();
+      result += ")\r\n";
+    }
   }
   else
   {
     result += "Netwerk Station\r\n";
+    result += "<br>\r\n";
+    if (pSettings->getLastNetworkIP() != "Unknown")
+    {
+      result += "(url: <a href='http://molen.local/' target='_blank'>molen.local</a> of via een lokaal IP adres, laatst bekende adres is: <a href='http://";
+      result += pSettings->getLastNetworkIP();
+      result += "/' target='_blank'>";
+      result += pSettings->getLastNetworkIP();
+      result += "</a>\r\n";
+      result += ")\r\n";
+    }
   }
-  result += "<br>\r\n";
-  result += "(url voor Access Point: <a href='http://molen.local/' target='_blank'>molen.local</a> of <a href='http://192.168.4.1/' target='_blank'>http://192.168.4.1</a>)\r\n";
-  result += "<br>\r\n";
-  result += "(url voor Netwerk Station: <a href='http://molen.local/' target='_blank'>molen.local</a> of via een lokaal IP adres, laatst bekende adres is: <a href='http://";
-  result += pSettings->getLastNetworkIP();
-  result += "/' target='_blank'>";
-  result += pSettings->getLastNetworkIP();
-  result += "</a>\r\n";
-  result += ")\r\n";
   result += "<br>\r\n";
   result += "<div id=\"sendMessage\"></div>\r\n";
   result += "<br><br>\r\n";
@@ -302,8 +332,8 @@ String getUpdatePart_nl(Settings * pSettings)
   result += "  function sendUpdateFirmware(data, path) {\r\n";
   result += "    var xhr = new XMLHttpRequest();   // new HttpRequest instance\r\n";
   result += "    xhr.open(\"POST\", path);\r\n";
-  result += "    xhr.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");\r\n";
-  result += "    document.getElementById(\"sendMessage\").innerHTML = \"Please wait\";\r\n";
+  result += "    xhr.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded; charset=UTF-8\");\r\n";
+  result += "    document.getElementById(\"sendMessage\").innerHTML = \"Even geduld\";\r\n";
   result += "    xhr.onreadystatechange = function() { // Call a function when the state changes\r\n";
   result += "     var myResponseText = \"\";\r\n";
   result += "      if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {\r\n";
@@ -342,7 +372,7 @@ String getFooterPart(Settings * pSettings)
   result += "  function sendDataHome(data, path) {\r\n";
   result += "    var xhr = new XMLHttpRequest();   // new HttpRequest instance\r\n";
   result += "    xhr.open(\"POST\", path);\r\n";
-  result += "    xhr.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");\r\n";
+  result += "    xhr.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded; charset=UTF-8\");\r\n";
   result += "    document.getElementById(\"sendMessage\").innerHTML = \"Please wait\";\r\n";
   result += "    xhr.onreadystatechange = function() { // Call a function when the state changes\r\n";
   result += "     var myResponseText = \"\";\r\n";
@@ -384,8 +414,8 @@ String getFooterPart_nl(Settings * pSettings)
   result += "  function sendDataHome(data, path) {\r\n";
   result += "    var xhr = new XMLHttpRequest();   // new HttpRequest instance\r\n";
   result += "    xhr.open(\"POST\", path);\r\n";
-  result += "    xhr.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");\r\n";
-  result += "    document.getElementById(\"sendMessage\").innerHTML = \"Please wait\";\r\n";
+  result += "    xhr.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded; charset=UTF-8\");\r\n";
+  result += "    document.getElementById(\"sendMessage\").innerHTML = \"Even geduld\";\r\n";
   result += "    xhr.onreadystatechange = function() { // Call a function when the state changes\r\n";
   result += "     var myResponseText = \"\";\r\n";
   result += "      if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {\r\n";
@@ -550,11 +580,11 @@ void wifi(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWiFiSe
   result += "  <br><br>\r\n";
   result += "Do NOT Erase and <input type=\"button\" name=\"networkButton\" value=\"Cancel\" onclick=\"cancelWiFi();\">\r\n";
   result += "  <br><br>\r\n";
-  result += "  <input id=\"eraseAPData\" type=\"button\" name=\"eraseAPDataButton\" value=\"Erase\" onclick=\"eraseWiFiData(this);\"> Erase Access Point data, will result in an unencrypted, open Access Point\r\n";
-  result += "  <br>\r\n";
-  result += "  <input id=\"eraseNetworkData\" type=\"button\" name=\"eraseNetworkDataButton\" value=\"Erase\" onclick=\"eraseWiFiData(this);\"> Erase Network data\r\n";
-  result += "  <br>\r\n";
-  result += "  <input id=\"eraseWiFiData\" type=\"button\" name=\"eraseWiFiDataButton\" value=\"Erase\" onclick=\"eraseWiFiData(this);\"> Erase Access Point AND Network data\r\n";
+  result += "  <input id=\"eraseAPData\" type=\"button\" name=\"eraseAPDataButton\" value=\"Erase\" onclick=\"eraseWiFiData(this);\"> Erase Access Point data; will result in an unsave, open Access Point\r\n";
+  result += "  <br><br>\r\n";
+  result += "  <input id=\"eraseNetworkData\" type=\"button\" name=\"eraseNetworkDataButton\" value=\"Erase\" onclick=\"eraseWiFiData(this);\"> Erase Network Station data\r\n";
+  result += "  <br><br>\r\n";
+  result += "  <input id=\"eraseWiFiData\" type=\"button\" name=\"eraseWiFiDataButton\" value=\"Erase\" onclick=\"eraseWiFiData(this);\"> Erase Access Point AND Network Station data; will result in an unsave, open Access Point\r\n";
   result += "</div>\r\n";
   result += "<script>\r\n";
   result += "function checkURIComponent(component, messageId, message) {\r\n";
@@ -586,7 +616,7 @@ void wifi(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWiFiSe
   result += "  function sendDataConnect(data) {\r\n";
   result += "    var xhr = new XMLHttpRequest();   // new HttpRequest instance\r\n";
   result += "    xhr.open(\"POST\", \"/wifiConnect/\");\r\n";
-  result += "    xhr.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");\r\n";
+  result += "    xhr.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded; charset=UTF-8\");\r\n";
   result += "    document.getElementById(\"sendMessage\").innerHTML = \"Please wait\";\r\n";
   result += "    xhr.onreadystatechange = function() { // Call a function when the state changes\r\n";
   result += "     var myResponseText = \"\";\r\n";
@@ -864,11 +894,11 @@ void wifi_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWiF
   result += "  <br><br>\r\n";
   result += "Verwijder NIETS en <input type=\"button\" name=\"networkButton\" value=\"Cancel\" onclick=\"cancelWiFi();\">\r\n";
   result += "  <br><br>\r\n";
-  result += "  <input id=\"eraseAPData\" type=\"button\" name=\"eraseAPDataButton\" value=\"Erase\" onclick=\"eraseWiFiData(this);\"> Verwijderen van Access Point resulteert in een onveilig, open Access Point\r\n";
-  result += "  <br>\r\n";
-  result += "  <input id=\"eraseNetworkData\" type=\"button\" name=\"eraseNetworkDataButton\" value=\"Erase\" onclick=\"eraseWiFiData(this);\"> Verwijder Netwerk gegevens\r\n";
-  result += "  <br>\r\n";
-  result += "  <input id=\"eraseWiFiData\" type=\"button\" name=\"eraseWiFiDataButton\" value=\"Erase\" onclick=\"eraseWiFiData(this);\"> Verwijder Access Point EN Netwerk gegevens\r\n";
+  result += "  <input id=\"eraseAPData\" type=\"button\" name=\"eraseAPDataButton\" value=\"Erase\" onclick=\"eraseWiFiData(this);\"> Verwijder Access Point gegevens; resulteert in een onveilig, open Access Point\r\n";
+  result += "  <br><br>\r\n";
+  result += "  <input id=\"eraseNetworkData\" type=\"button\" name=\"eraseNetworkDataButton\" value=\"Erase\" onclick=\"eraseWiFiData(this);\"> Verwijder Netwerk Station gegevens\r\n";
+  result += "  <br><br>\r\n";
+  result += "  <input id=\"eraseWiFiData\" type=\"button\" name=\"eraseWiFiDataButton\" value=\"Erase\" onclick=\"eraseWiFiData(this);\"> Verwijder Access Point EN Netwerk Station gegevens; resulteert in een onveilig, open Access Point\r\n";
   result += "</div>\r\n";
   result += "<script>\r\n";
   result += "function checkURIComponent(component, messageId, message) {\r\n";
@@ -900,7 +930,7 @@ void wifi_nl(ESP8266WebServer &server, Settings * pSettings, WiFiSettings * pWiF
   result += "  function sendDataConnect(data) {\r\n";
   result += "    var xhr = new XMLHttpRequest();   // new HttpRequest instance\r\n";
   result += "    xhr.open(\"POST\", \"/wifiConnect/\");\r\n";
-  result += "    xhr.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");\r\n";
+  result += "    xhr.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded; charset=UTF-8\");\r\n";
   result += "    document.getElementById(\"sendMessage\").innerHTML = \"Even geduld\";\r\n";
   result += "    xhr.onreadystatechange = function() { // Call a function when the state changes\r\n";
   result += "     var myResponseText = \"\";\r\n";

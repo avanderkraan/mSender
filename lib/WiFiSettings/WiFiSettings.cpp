@@ -36,15 +36,15 @@ uint16_t WiFiSettings::saveAuthorizationAccessPoint()
     //EEPROM.begin(this->address + this->storageSize);
     EEPROM.begin(this->MAX_EEPROM_SIZE);
 
-    char myssidAccessPoint[33];  // one more for the null character
+    char myssidAccessPoint[129];  // one more for the null character
     strcpy(myssidAccessPoint, this->ssidAccessPoint.c_str());
     EEPROM.put(address, myssidAccessPoint);
-    address += 33;
+    address += 129;
 
-    char myPasswordAccessPoint[33];  // one more for the null character
+    char myPasswordAccessPoint[129];  // one more for the null character
     strcpy(myPasswordAccessPoint, this->passwordAccessPoint.c_str());
     EEPROM.put(address, myPasswordAccessPoint);
-    address += 33;
+    address += 129;
   
     EEPROM.commit();    // with success it will return true
     EEPROM.end();       // release RAM copy of EEPROM content
@@ -58,7 +58,7 @@ uint16_t WiFiSettings::saveAuthorizationAccessPoint()
 uint16_t WiFiSettings::saveAuthorizationNetwork()
 {
   uint16_t firstAddress = this->address;
-  uint16_t address = this->address + 66;  // Network Settings comes after Access Point Settings
+  uint16_t address = this->address + 258;  // Network Settings comes after Access Point Settings
 
   if (this->getStorageSizeIsAvailable())
     {
@@ -72,12 +72,12 @@ uint16_t WiFiSettings::saveAuthorizationNetwork()
     char myssidNetwork[33];  // one more for the null character
     strcpy(myssidNetwork, this->ssidNetwork.c_str());
     EEPROM.put(address, myssidNetwork);
-    address += 33;
+    address += 129;
 
-    char myPasswordNetwork[33];  // one more for the null character
+    char myPasswordNetwork[129];  // one more for the null character
     strcpy(myPasswordNetwork, this->passwordNetwork.c_str());
     EEPROM.put(address, myPasswordNetwork);
-    address += 33;
+    address += 129;
   
     EEPROM.commit();    // with success it will return true
     EEPROM.end();       // release RAM copy of EEPROM content
@@ -127,7 +127,7 @@ bool WiFiSettings::eraseWiFiSettings() {
 }
 
 bool WiFiSettings::eraseAccessPointSettings() {
-  if (this->eraseSettings(this->address, 66))
+  if (this->eraseSettings(this->address, 258))
   {
     this->passwordAccessPoint = "";
     this->ssidAccessPoint = "";
@@ -137,7 +137,7 @@ bool WiFiSettings::eraseAccessPointSettings() {
 }
 
 bool WiFiSettings::eraseNetworkSettings() {
-  if (this->eraseSettings(this->address + 66, 66))
+  if (this->eraseSettings(this->address + 258, 258))
   {
     this->passwordNetwork = "";
     this->ssidNetwork = "";
@@ -178,12 +178,12 @@ String WiFiSettings::getNetworkSSID()
 
 void WiFiSettings::setNetworkPassword(String password)
 {
-    this->passwordNetwork = password;
+    this->passwordNetwork = this->dencrypt.encrypt(password);
 }
 
 String WiFiSettings::getNetworkPassword()
 {
-    return this->passwordNetwork;
+    return this->dencrypt.decrypt(this->passwordNetwork);
 }
 
 String WiFiSettings::readAccessPointSSID()
@@ -191,7 +191,7 @@ String WiFiSettings::readAccessPointSSID()
   if (this->getStorageSizeIsAvailable())
   {
     uint16_t address = this->address ;  // Access Point SSID Setting comes first
-    char myAccessPointSSID[33];
+    char myAccessPointSSID[129];
     EEPROM.begin(this->MAX_EEPROM_SIZE);
     EEPROM.get(address, myAccessPointSSID);
     EEPROM.end();  // release RAM copy of EEPROM content
@@ -208,8 +208,8 @@ String WiFiSettings::readAccessPointPassword()
 {
   if (this->getStorageSizeIsAvailable())
   {
-    uint16_t address = this->address + 33;  // Access Point Password Setting comes second
-    char myAccessPointPassword[33];
+    uint16_t address = this->address + 129;  // Access Point Password Setting comes second
+    char myAccessPointPassword[129];
     EEPROM.begin(this->MAX_EEPROM_SIZE);
     EEPROM.get(address, myAccessPointPassword);
     EEPROM.end();  // release RAM copy of EEPROM content
@@ -226,7 +226,7 @@ String WiFiSettings::readNetworkSSID()
 {  
   if (this->getStorageSizeIsAvailable())
   {
-    uint16_t address = this->address + 66;  // Network Station SSID Setting comes third
+    uint16_t address = this->address + 258;  // Network Station SSID Setting comes third
     char myNetworkSSID[33];
     EEPROM.begin(this->MAX_EEPROM_SIZE);
     EEPROM.get(address, myNetworkSSID);
@@ -244,7 +244,7 @@ String WiFiSettings::readNetworkPassword()
 {  
   if (this->getStorageSizeIsAvailable())
     {
-    uint16_t address = this->address + 99;  // Network Station Password Setting comes fourth
+    uint16_t address = this->address + 387;  // Network Station Password Setting comes fourth
     char myNetworkPassword[33];
     EEPROM.begin(this->MAX_EEPROM_SIZE);
     EEPROM.get(address, myNetworkPassword);
@@ -253,7 +253,7 @@ String WiFiSettings::readNetworkPassword()
     if (myNetworkPassword[0] == 0xff) {
       return "";
     }
-    return String(myNetworkPassword);
+    return this->dencrypt.decrypt(String(myNetworkPassword));
     }
   return "";
 }
