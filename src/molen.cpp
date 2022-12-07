@@ -292,7 +292,7 @@ void checkGlobalPulseInLoop() {
     
     elapsedTime = millis() - startPulse;
     // fake a startPulse to gradually lower the speed, do not count pulses
-    if (elapsedTime * pSettings->ratio > (pSettings->getSEND_PERIOD() * 2)) {
+    if (elapsedTime * pSettings->ratio > (pSettings->getSendPeriod() * 2)) {
       pulsesPerMinute = 0;
       if (bladesPerMinute > stepDown)
       {
@@ -842,6 +842,12 @@ void processServerData(String responseData)
     pSettings->saveDeviceKey(); // save to EEPROM
   }
 
+  String requestInterval = getValueFromJSON("t", responseData);
+  if ((requestInterval != ""))
+  {
+    pSettings->setRequestInterval(requestInterval);
+  }
+
   String proposedRatio = getValueFromJSON("pR", responseData);
   // check ratio
   bool ratioOK = true;
@@ -1033,7 +1039,7 @@ void loop()
   if (WiFi.getMode() == WIFI_STA)
   {
     /* send data to target server using ESP8266HTTPClient */
-    if (millis() - lastSendMillis > pSettings->getSEND_PERIOD())
+    if (millis() - lastSendMillis > pSettings->getSendPeriod())
     {
       if ((aRequest.readyState() == 0) || (aRequest.readyState() == 4)) {
         sendContentToTarget(&aRequest, wifiClient, pSettings, pWifiSettings, String(WiFi.macAddress()), revolutions, bladesPerMinute, detectInfoRequest);
